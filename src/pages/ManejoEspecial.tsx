@@ -1,3 +1,5 @@
+import {useState, useEffect} from "react";
+
 import { CirclePlus } from 'lucide-react';
 
 //card
@@ -48,33 +50,38 @@ import { zodResolver } from "@hookform/resolvers/zod"
 
 import { NavBarCustom } from "@/components/navbar-custom"
 
+import type { CatalogoI } from "@/interfaces/interfaces";
+import {listadoAreaGeneracion , listadoTipoEnvases, listadoTipoGenerador, listadoTipoResiduo  } from "../api/service";
+
+
 export function ManejoEspecial() {
   
 
-  const envases = [
-    { label: "Seleccione un tipo de residuo ...", value: "" },
-    { label: "Cilindro", value: "Cilindro" },
-    { label: "Tambor", value: "Tambor" },
-    { label: "Bidón", value: "Bidón" },
-    { label: "Bolsa", value: "Bolsa" },
-    { label: "Contenedor", value: "Contenedor" },
-  ]
+  const [envases, setEnvases] = useState<CatalogoI[]>([]);
+  const [generadores, setGeneradores] = useState<CatalogoI[]>([]);
+  const [areas, setAreas] = useState<CatalogoI[]>([]);
+  const [tipoResiduo, setTipoResiduo] = useState<CatalogoI[]>([]);
 
-  const generadores = [
-    { label: "Seleccione un generador ...", value: "" },
-    { label: "Operaciones Mina S.A", value: "Operaciones Mina S.A" },
-    { label: "Taller Mecánico", value: "Taller Mecánico" },
-    { label: "Laboratorio Minero", value: "Laboratorio Minero" },
-    { label: "Mantenimiento", value: "Mantenimiento" },
-    { label: "Sistemas", value: "Sistemas" },
-  ]
+  useEffect(() => {
+    cargarCatalogos();
+  }, [])
 
-  const areas = [
-    { label: "Seleccione un área ...", value: "" },
-    { label: "Área 1", value: "Área 1" },
-    { label: "Área 2", value: "Área 2" },
-    { label: "Área 3", value: "Área 3" },
-  ]
+
+  const cargarCatalogos = async()=> {
+
+    const [envases, generadores, areas, residuos] = await Promise.all([
+      listadoTipoEnvases(),
+      listadoTipoGenerador(),
+      listadoAreaGeneracion(),
+      listadoTipoResiduo()
+    ])
+
+    setEnvases(envases.data);
+    setGeneradores(generadores.data);
+    setAreas(areas.data);
+    setTipoResiduo(residuos.data);
+  }
+  
 
   //schema
   const schema = z.object({
@@ -154,9 +161,9 @@ export function ManejoEspecial() {
 
                         <SelectContent className="w-full!">
                           <SelectGroup>
-                            {envases.map((item) => (
-                              <SelectItem key={item.value} value={item.value}>
-                                {item.label}
+                            {tipoResiduo.map((item) => (
+                              <SelectItem key={Number(item.id)} value={item.descripcion}>
+                                {item.descripcion}
                               </SelectItem>
                             ))}
                           </SelectGroup>
@@ -238,12 +245,8 @@ export function ManejoEspecial() {
                         <SelectContent className="w-full!">
                           <SelectGroup>
                             {generadores.map((item) => (
-                              <SelectItem
-                                key={item.value}
-                                value={item.value}
-                                className="w-full"
-                              >
-                                {item.label}
+                              <SelectItem key={Number(item.id)} value={item.descripcion}>
+                                {item.descripcion}
                               </SelectItem>
                             ))}
                           </SelectGroup>
@@ -283,12 +286,8 @@ export function ManejoEspecial() {
                         <SelectContent className="w-full!">
                           <SelectGroup>
                             {areas.map((item) => (
-                              <SelectItem
-                                key={item.value}
-                                value={item.value}
-                                className="w-full"
-                              >
-                                {item.label}
+                              <SelectItem key={Number(item.id)} value={item.descripcion}>
+                                {item.descripcion}
                               </SelectItem>
                             ))}
                           </SelectGroup>
