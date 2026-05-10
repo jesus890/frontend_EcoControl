@@ -33,7 +33,7 @@ export function AppSidebar() {
       icon: TriangleAlert,
     },
     {
-      title: "Manejo Especial",
+      title: "Residuos sólidos Urbanos",
       url: "/manejo-especial",
       icon: PackageOpen,
     },

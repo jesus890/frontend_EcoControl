@@ -26,7 +26,7 @@ export function NavBarCustom() {
       break;
 
       case "/manejo-especial":
-        rutename = "Residuos de Manejo Especial";
+        rutename = "Residuos Sólidos Urbanos";
       break;
     }
 

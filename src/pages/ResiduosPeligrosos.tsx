@@ -1,14 +1,9 @@
-import {useState, useEffect} from "react";
+import { useState, useEffect } from "react"
 
-import { CirclePlus } from 'lucide-react';
+import { CirclePlus } from "lucide-react"
 
 //card
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 //field
 import {
@@ -18,15 +13,15 @@ import {
   FieldError,
 } from "@/components/ui/field"
 
-//select
+//combobox
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
 
 //popover
 import {
@@ -40,7 +35,10 @@ import { Calendar } from "@/components/ui/calendar"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+
+//icons 
+import { Tag } from 'lucide-react';
+
 
 //validaciones y forms
 import { useForm, Controller } from "react-hook-form"
@@ -50,85 +48,245 @@ import { zodResolver } from "@hookform/resolvers/zod"
 
 import { NavBarCustom } from "@/components/navbar-custom"
 
-import type { CatalogoI } from "@/interfaces/interfaces";
-import {listadoAreaGeneracion , listadoTipoEnvases, listadoTipoGenerador, listadoTipoResiduo  } from "../api/service";
+import type { CatalogoI , ResiduoPeligroPdfI , ResiduoPeligroSaveI } from "@/interfaces/interfaces"
 
+import {
+  listadoAreaGeneracionRP,
+  listadoTipoEnvasesRP,
+  listadoTipoGeneradorRP,
+  listadoAutorizacionRP,
+  listadoDestinoFinalRP,
+  obtenerGenerarNumManifiesto,
+  crearReporteResiduosPeligroso,
+  listadoTipoResiduoRP,
+  listadoSubTipoResiduoRP
+} from "../api/service"
+
+import { DialogResiduoPeligroso } from "@/components/dialog-residuo-peligroso"
+
+import { toast } from "sonner"
 
 export function ResiduosPeligrosos() {
-  
+
+  const [open, setOpen] = useState<boolean>(false);
+  const [tipoResiduo, setTipoResiduo] = useState<CatalogoI[]>([]);
+  const [subTipoResiduo, setSubTipoResiduo] = useState<CatalogoI[]>([]);
   const [envases, setEnvases] = useState<CatalogoI[]>([]);
   const [generadores, setGeneradores] = useState<CatalogoI[]>([]);
   const [areas, setAreas] = useState<CatalogoI[]>([]);
+  const [destinoFinal, setDestinoFinal] = useState<CatalogoI[]>([]);
+  const [autorizacion, setAutorizacion] = useState<CatalogoI[]>([]);
 
-  useEffect(() => {
-    cargarCatalogos();
-  }, [])
+  const [uuid, setUuid] =useState("");
 
 
-  const cargarCatalogos = async()=> {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    const [envases, generadores, areas] = await Promise.all([
-      listadoTipoEnvases(),
-      listadoTipoGenerador(),
-      listadoAreaGeneracion()
-    ])
+  const [dataPdf, setdataPdf] = useState<ResiduoPeligroPdfI>({
+    nombreResiduo: "",
+    descGenerador: "",
+    descArea: "",
+    cantidad: 1,
+    fEntrada: today,
+    uuid : null
+  });
 
-    setEnvases(envases.data);
-    setGeneradores(generadores.data);
-    setAreas(areas.data);
-  }
-
+  // const [dataToSave, setdataToSave] = useState<ResiduoPeligroSaveI>({
+  //   nombreResiduo: "",
+  //   cantidad: 0,
+  //   descEnvase: "",
+  //   descGenerador: "",
+  //   descArea: "",
+  //   numManifiesto: "",
+  //   descDestinoFinal: null,
+  //   descAutorizacion: null,
+  //   fEntrada: new Date
+  // });
   
   //schema
   const schema = z.object({
-    nombre: z.string().min(1, "El nombre es obligatorio"),
+
+    nombreResiduo: z.string().min(1, "El nombre es obligatorio"),
+
+    tipoResiduo: z
+      .string()
+      .refine((val) => val !== null && val !== "", {
+        message: "Selecciona un tipo de residuo",
+      }),
+
+    subTipoResiduo: z
+      .string().nullable(),
 
     cantidad: z
       .number({ error: "La cantidad debe ser un número" })
       .positive("La cantidad debe ser mayor a 0"),
 
-    tipoEnvase: z.string().min(1, "Selecciona un tipo de envase"),
+    tipoEnvase: z
+      .string()
+      .refine((val) => val !== null && val !== "", {
+        message: "Selecciona un tipo de envase",
+      }),
 
-    tipoGenerador: z.string().min(1, "Selecciona un tipo de generador"),
+    tipoGenerador: z
+      .string()
+      .refine((val) => val !== null && val !== "", {
+        message: "Selecciona un tipo de generador",
+      }),
 
-    tipoArea: z.string().min(1, "Selecciona una área"),
+    tipoArea: z
+      .string()
+      .refine((val) => val !== null && val !== "", {
+        message: "Selecciona un tipo de tipo de area",
+      }),
 
-    manifiesto: z.string().min(1, "El número de manifiesto es obligatorio"),
+    tipoAutorizacion: z
+      .string().nullable(),
 
-    autorizacion: z.string().min(1, "Código de autorización obligatorio"),
+    tipoDestinoFinal: z
+      .string().nullable(),
 
-    destinoFinal: z.string().min(1, "Destino Final"),
+    fEntrada: z.date().min(today, { error: "Fecha invalida" })
 
-    fEntrada: z.date().min(new Date(), { error: "Fecha invalida" }),
-
-    fSalida: z.date().min(new Date(), { error: "Fecha invalida" }),
-
-    observaciones: z.string()
   })
 
   type FormValues = z.infer<typeof schema>
 
-  //useform
+  //inicializacion de variables
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       cantidad: 0,
-      nombre: "",
+      nombreResiduo: "",
+      tipoResiduo: "",
+      subTipoResiduo: "",
       tipoEnvase: "",
       tipoGenerador: "",
       tipoArea: "",
-      manifiesto: "",
-      autorizacion: "",
-      destinoFinal: "",
-      fEntrada: new Date(),
-      fSalida: new Date(),
-      observaciones: ""
+      tipoAutorizacion: null,
+      tipoDestinoFinal: null,
+      fEntrada: new Date()
     },
     mode: "onBlur",
   })
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log(data)
+  //valores del form
+  const values = form.watch()
+
+  useEffect(() => {
+    cargarCatalogos()
+  }, [])
+
+  const cargarCatalogos = async () => {
+
+    const [residuos, envases, generadores, destinoFinal ] = await Promise.all([
+      listadoTipoResiduoRP(),
+      listadoTipoEnvasesRP(),
+      listadoTipoGeneradorRP(),
+      listadoDestinoFinalRP()
+    ])
+
+    setTipoResiduo(residuos.data);
+    setEnvases(envases.data);
+    setGeneradores(generadores.data);
+    setDestinoFinal(destinoFinal.data);
+  }
+
+  //al seleccionar un residuo, actualiza el listado de subtipo residuo acorde al primer filtro
+  const residuoOnChange = async(value: string|null)=> {
+    if(value !== null)
+    {
+      const selectedTipo = tipoResiduo.find((item) => item.descripcion === value)
+      if(selectedTipo)
+      {
+        console.log({selectedTipo})
+        const result = await listadoSubTipoResiduoRP(selectedTipo.id);
+        setSubTipoResiduo(result.data);
+      }      
+    }
+    else
+    {
+      setSubTipoResiduo([])
+    }
+  }
+
+  //al seleccionar un valor de generador , actualiza el listado de areas acorde al primer filtro
+  const generadorOnChange = async(value: string|null)=> {
+    if(value !== null)
+    {
+      const selectedTipo = generadores.find((item) => item.descripcion === value)
+      if(selectedTipo)
+      {
+        const result = await listadoAreaGeneracionRP(selectedTipo.id);
+        setAreas(result.data);
+      }      
+    }
+    else
+    {
+      setAreas([])
+    }
+  }
+
+  //al seleccionar un valor de autorizacion, actualiza el listado de autorizacion acorde al primer filtro
+  const destinoFinalOnChange = async(value: string|null)=> {
+    if(value !== null)
+    {
+      const selectedTipo = destinoFinal.find((item) => item.descripcion === value)
+      if(selectedTipo)
+      {
+        const result = await listadoAutorizacionRP(selectedTipo.id);
+        setAutorizacion(result.data);
+      }      
+    }
+    else
+    {
+      setAutorizacion([])
+    }
+  }
+
+  const onSubmit: SubmitHandler<FormValues> = async(data) => {
+
+     const dataToSave = {
+      nombreResiduo: data.nombreResiduo,
+      cantidad: data.cantidad,
+      descEnvase: data.tipoEnvase,
+      descGenerador: data.tipoGenerador,
+      descArea: data.tipoArea,
+      numManifiesto: data.manifiesto,
+      descDestinoFinal: data.tipoDestinoFinal,
+      descAutorizacion: data.tipoAutorizacion,
+      fEntrada: data.fEntrada
+     }
+
+     const result = await crearReporteResiduosPeligroso(dataToSave);
+     if(result.data)
+     {
+        toast("El registro ha sido creado!")
+        setUuid(result.data.uuid);
+     }
+  
+     console.log({result})
+
+  }
+
+
+
+  const previsualizarPDF = () => {
+  
+    const dataToGeneratePDF = {
+      nombreResiduo: values.nombreResiduo,
+      descGenerador: String(values.tipoGenerador),
+      descArea: String(values.tipoArea),
+      cantidad: values.cantidad,
+      fEntrada :  values.fEntrada,
+      uuid: uuid ? uuid : null
+    }
+
+    console.log({dataToGeneratePDF});
+
+
+    setdataPdf(dataToGeneratePDF);
+    setOpen(true);
   }
 
   return (
@@ -148,19 +306,19 @@ export function ResiduosPeligrosos() {
                 
                 {/* Nombre */}
                 <Controller
-                  name="nombre"
+                  name="nombreResiduo"
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel
-                        htmlFor="nombre"
+                        htmlFor="nombreResiduo"
                         className="text-[13px] font-bold text-negrito"
                       >
                         Nombre del Residuo *
                       </FieldLabel>
 
                       <Input
-                        id="nombre"
+                        id="nombreResiduo"
                         type="text"
                         placeholder="Ej. Aceite Quemado"
                         className="placeholder:text-placeholder"
@@ -182,6 +340,92 @@ export function ResiduosPeligrosos() {
                     </Field>
                   )}
                 />
+
+                {/* TipoResiduo */}
+                <Controller
+                  name="tipoResiduo"
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="text-[13px] font-bold text-negrito">Tipo de Residuo *</FieldLabel>
+
+                        <Combobox
+                          items={tipoResiduo}
+                          value={field.value ?? ""}
+                          onValueChange={(value) => (field.onChange(value), residuoOnChange(value)) }
+                        >
+                          <ComboboxInput placeholder="Selecciona un tipo de residuo..." />
+
+                          <ComboboxContent>
+                            <ComboboxEmpty>
+                              No se encontraron resultados.
+                            </ComboboxEmpty>
+
+                            <ComboboxList>
+                              {(item) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.descripcion)}
+                                >
+                                  {item.descripcion}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError>{fieldState.error.message}</FieldError>
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+
+
+                {/* SubTipoResiduo  */}
+                 <Controller
+                  name="subTipoResiduo"
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="text-[13px] font-bold text-negrito">SubTipo Residuo</FieldLabel>
+
+                        <Combobox
+                          items={subTipoResiduo}
+                          value={field.value ?? ""}
+                          onValueChange={(value) => field.onChange(value)}
+                        >
+                          <ComboboxInput placeholder="Selecciona un subtipo de residuo..." />
+
+                          <ComboboxContent>
+                            <ComboboxEmpty>
+                              No se encontraron resultados.
+                            </ComboboxEmpty>
+
+                            <ComboboxList>
+                              {(item) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.descripcion)}
+                                >
+                                  {item.descripcion}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError>{fieldState.error.message}</FieldError>
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+
 
                 {/* Cantidad */}
                 <Controller
@@ -226,234 +470,211 @@ export function ResiduosPeligrosos() {
                 <Controller
                   name="tipoEnvase"
                   control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="tipoEnvase"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Tipo de Envase *
-                      </FieldLabel>
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="text-[13px] font-bold text-negrito">Tipo de Envase *</FieldLabel>
 
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger id="tipoEnvase">
-                          <SelectValue placeholder="Selecciona un envase" />
-                        </SelectTrigger>
+                        <Combobox
+                          items={envases}
+                          value={field.value ?? ""}
+                          onValueChange={(value) => field.onChange(value)}
+                        >
+                          <ComboboxInput placeholder="Selecciona un envase..." />
 
-                        <SelectContent className="w-full!">
-                          <SelectGroup>
-                            {envases.map((item) => (
-                              <SelectItem key={Number(item.id)} value={item.descripcion}>
-                                {item.descripcion}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                          <ComboboxContent>
+                            <ComboboxEmpty>
+                              No se encontraron resultados.
+                            </ComboboxEmpty>
 
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
+                            <ComboboxList>
+                              {(item) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.descripcion)}
+                                >
+                                  {item.descripcion}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError>{fieldState.error.message}</FieldError>
+                        )}
+                      </Field>
+                    )
+                  }}
                 />
 
                 {/* TipoGenerador */}
                 <Controller
                   name="tipoGenerador"
                   control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="tipoGenerador"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Tipo de Generador *
-                      </FieldLabel>
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="text-[13px] font-bold text-negrito">Tipo Generador *</FieldLabel>
 
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger id="tipoEnvase">
-                          <SelectValue placeholder="Selecciona un envase" />
-                        </SelectTrigger>
+                        <Combobox
+                          items={generadores}
+                          value={field.value ?? ""}
+                          onValueChange={(value) => (field.onChange(value), generadorOnChange(value))}
+                        >
+                          <ComboboxInput placeholder="Selecciona un generador..." />
 
-                        <SelectContent className="w-full!">
-                          <SelectGroup>
-                            {generadores.map((item) => (
-                              <SelectItem key={Number(item.id)} value={item.descripcion}>
-                                {item.descripcion}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                          <ComboboxContent>
+                            <ComboboxEmpty className="text-placeholder">
+                              No se encontraron resultados.
+                            </ComboboxEmpty>
 
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
+                            <ComboboxList>
+                              {(item) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.descripcion)}
+                                >
+                                  {item.descripcion}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError className="text-rojito">{fieldState.error.message}</FieldError>
+                        )}
+                      </Field>
+                    )
+                  }}
                 />
 
-                {/* TipoArea */}
+                {/* Area de Generación (depende de TipoGenerador) */}
                 <Controller
                   name="tipoArea"
                   control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="tipoArea"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Área de Generación *
-                      </FieldLabel>
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="text-[13px] font-bold text-negrito">Tipo Área *</FieldLabel>
 
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger id="tipoEnvase">
-                          <SelectValue placeholder="Selecciona un envase" />
-                        </SelectTrigger>
+                        <Combobox
+                          items={areas}
+                          value={field.value ?? ""}
+                          onValueChange={(value) => field.onChange(value)}
+                        >
+                          <ComboboxInput placeholder="Selecciona un tipo de área..." />
 
-                        <SelectContent className="w-full!">
-                          <SelectGroup>
-                            {areas.map((item) => (
-                              <SelectItem key={Number(item.id)} value={item.descripcion}>
-                                {item.descripcion}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                          <ComboboxContent>
+                            <ComboboxEmpty className="text-placeholder">
+                              No se encontraron resultados.
+                            </ComboboxEmpty>
 
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
+                            <ComboboxList>
+                              {(item) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.descripcion)}
+                                >
+                                  {item.descripcion}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError className="text-rojito">{fieldState.error.message}</FieldError>
+                        )}
+                      </Field>
+                    )
+                  }}
                 />
 
-                {/* Numero de manifiesto */}
-                <Controller
-                  name="manifiesto"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="manifiesto"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Número de Manifiesto
-                      </FieldLabel>
-
-                      <Input
-                        id="manifiesto"
-                        type="text"
-                        placeholder="Ej. MAN-2026-001"
-                        className="placeholder:text-placeholder"
-                        value={field.value ?? ""}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          field.onChange(value)
-                        }}
-                      />
-
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
-                />
-
-                {/* Autorización */}
-                <Controller
-                  name="autorizacion"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="autorizacion"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Autorización
-                      </FieldLabel>
-
-                      <Input
-                        id="autorizacion"
-                        type="text"
-                        placeholder="Ej. MAN-2026-001"
-                        className="placeholder:text-placeholder"
-                        value={field.value ?? ""}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          field.onChange(value)
-                        }}
-                      />
-
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
-                />
-
+               
                 {/* Destino Final */}
                 <Controller
-                  name="destinoFinal"
+                  name="tipoDestinoFinal"
                   control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="destinoFinal"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Destino Final
-                      </FieldLabel>
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="text-[13px] font-bold text-negrito">Destino Final</FieldLabel>
 
-                      <Input
-                        id="destinoFinal"
-                        type="text"
-                        placeholder="Ej. MAN-2026-001"
-                        className="placeholder:text-placeholder"
-                        value={field.value ?? ""}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          field.onChange(value)
-                        }}
-                      />
+                        <Combobox
+                          items={destinoFinal}
+                          value={field.value ?? ""}
+                          onValueChange={(value) => (field.onChange(value), destinoFinalOnChange(value))}
+                        >
+                          <ComboboxInput placeholder="Selecciona un destino final..." />
 
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
+                          <ComboboxContent>
+                            <ComboboxEmpty className="text-placeholder">
+                              No se encontraron resultados.
+                            </ComboboxEmpty>
+
+                            <ComboboxList>
+                              {(item) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.descripcion)}
+                                >
+                                  {item.descripcion}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError className="text-rojito">{fieldState.error.message}</FieldError>
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+
+                {/* Autorización (depende de Destino Final)*/}
+                <Controller
+                  name="tipoAutorizacion"
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="text-[13px] font-bold text-negrito">Tipo Autorización</FieldLabel>
+
+                        <Combobox
+                          items={autorizacion}
+                          value={field.value ?? ""}
+                          onValueChange={(value) => field.onChange(value)}
+                        >
+                          <ComboboxInput placeholder="Selecciona un tipo de autorización..." />
+
+                          <ComboboxContent>
+                            <ComboboxEmpty className="text-placeholder">
+                              No se encontraron resultados.
+                            </ComboboxEmpty>
+
+                            <ComboboxList>
+                              {(item) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.descripcion)}
+                                >
+                                  {item.descripcion}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError className="text-rojito">{fieldState.error.message}</FieldError>
+                        )}
+                      </Field>
+                    )
+                  }}
                 />
 
                 {/* Fecha de entrada */}
@@ -469,15 +690,15 @@ export function ResiduosPeligrosos() {
                         Fecha de Entrada *
                       </FieldLabel>
 
-                      <Popover >
-                        <PopoverTrigger>
+                      <Popover>
+                        <PopoverTrigger disabled>
                           <div
-                            className="h-8 w-full rounded-lg text-placeholder text-left border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+                            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-left text-base text-placeholder transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
                             aria-invalid={fieldState.invalid}
                           >
                             {field.value
                               ? field.value.toLocaleDateString()
-                              : "Select date"}
+                              : "Selecciona una fecha ..."}
                           </div>
                         </PopoverTrigger>
 
@@ -504,97 +725,28 @@ export function ResiduosPeligrosos() {
                   )}
                 />
 
-                 {/* Fecha de salida */}
-                 <Controller
-                  name="fSalida"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="fSalida"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Fecha de Entrada *
-                      </FieldLabel>
-
-                      <Popover >
-                        <PopoverTrigger>
-                          <div
-                            className="h-8 w-full rounded-lg text-placeholder text-left border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
-                            aria-invalid={fieldState.invalid}
-                          >
-                            {field.value
-                              ? field.value.toLocaleDateString()
-                              : "Select date"}
-                          </div>
-                        </PopoverTrigger>
-
-                        <PopoverContent
-                          className="w-auto overflow-hidden p-0"
-                          align="start"
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            defaultMonth={field.value}
-                            captionLayout="dropdown"
-                            onSelect={field.onChange}
-                          />
-                        </PopoverContent>
-                      </Popover>
-
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
+                <DialogResiduoPeligroso
+                  open={open}
+                  setOpen={setOpen}
+                  data={dataPdf}
                 />
-
-                {/* Observaciones */}
-                <Controller
-                  name="observaciones"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="observaciones"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Observaciones
-                      </FieldLabel>
-
-                      <Textarea
-                        id="observaciones"
-                        placeholder="Ej. Notas adicionales sobre el residuo..."
-                        className="placeholder:text-placeholder"
-                        value={field.value ?? ""}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          field.onChange(value)
-                        }}
-                      />
-
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
-                />
-
-
 
               </FieldGroup>
 
-              <Button  type="submit" className="hover:bg-red-500 focus:bg-red-500 focus:outline-none cursor-pointer">
+              <Button
+                type="submit"
+                className="cursor-pointer hover:bg-[#305a78] focus:bg-[#305a78] focus:outline-none"
+              >
                 <CirclePlus />
                 <span>Registrar Residuos</span>
+              </Button>
+          
+               <Button
+                onClick={form.handleSubmit(previsualizarPDF)}
+                className="cursor-pointer hover:bg-[#305a78] focus:bg-[#305a78] focus:outline-none"
+              >
+                <Tag />
+                <span>Vista Previa Etiqueta</span>
               </Button>
 
             </form>
