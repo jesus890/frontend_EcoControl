@@ -7,12 +7,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldGroup } from "@/components/ui/field";
-import type { ReporteI, ResiduoPeligroPdfI } from "@/interfaces/interfaces";
-import { generarReporteResiduoPeligroso } from "../api/service";
-import { ArrowBigDownDash } from 'lucide-react';
-import { Loader } from 'lucide-react';
+} from "@/components/ui/dialog"
+import { Field, FieldGroup } from "@/components/ui/field"
+import type { ReporteI, ResiduoPeligroPdfI } from "@/interfaces/interfaces"
+import { generarReporteResiduoPeligroso } from "../api/service"
+import { ArrowBigDownDash } from "lucide-react"
+import { Loader } from "lucide-react"
 
 interface PropI {
   open: boolean
@@ -21,9 +21,8 @@ interface PropI {
 }
 
 export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
-
-  const [reporteData, setReporteData] = useState<ReporteI>();
-  const [loading, setLoading] = useState<Boolean>(false);
+  const [reporteData, setReporteData] = useState<ReporteI>()
+  const [loading, setLoading] = useState<Boolean>(false)
 
   useEffect(() => {
     if (open) getReporte()
@@ -34,46 +33,42 @@ export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
     setReporteData(result.data)
   }
 
-    const descargarFicha = async() => {
-    try
-    {
-      setLoading(true);
-      await sleep(4000); // 4 segundos
-      downloadBase64Pdf(reporteData?.pdf_blob);
-    }
-    catch(ex)
-    {
-      console.log({ex});
-    }
-    finally
-    {
-      setLoading(false);
+  const descargarFicha = async () => {
+    try {
+      setLoading(true)
+      await sleep(4000) // 4 segundos
+      downloadBase64Pdf(reporteData?.pdf_blob)
+    } catch (ex) {
+      console.log({ ex })
+    } finally {
+      setLoading(false)
     }
   }
 
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms))
 
-  function downloadBase64Pdf (base64 : any, fileName = "reporte.pdf") {
-    const cleanBase64 = base64.replace(/^data:application\/pdf;base64,/, "");
-    const binaryString = atob(cleanBase64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
+  function downloadBase64Pdf(base64: any, fileName = "reporte.pdf") {
+    const cleanBase64 = base64.replace(/^data:application\/pdf;base64,/, "")
+    const binaryString = atob(cleanBase64)
+    const len = binaryString.length
+    const bytes = new Uint8Array(len)
 
     for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
+      bytes[i] = binaryString.charCodeAt(i)
     }
 
-    const blob = new Blob([bytes], { type: "application/pdf" });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([bytes], { type: "application/pdf" })
+    const url = URL.createObjectURL(blob)
 
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    const a = document.createElement("a")
+    a.href = url
+    a.download = fileName
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
 
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -99,18 +94,22 @@ export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
 
         {/* FOOTER FIJO */}
         <DialogFooter className="border-t p-4">
-
           <DialogClose>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
 
-          <Button className="cursor-pointer hover:bg-[#A94438] focus:bg-[#A94438] focus:outline-none bg-[#922b21]" onClick={()=> descargarFicha()}>
-            {loading ? <Loader className="animate-spin"/>  : <ArrowBigDownDash />}
+          <Button
+            className="cursor-pointer bg-[#922b21] hover:bg-[#A94438] focus:bg-[#A94438] focus:outline-none"
+            onClick={() => descargarFicha()}
+          >
+            {loading ? (
+              <Loader className="animate-spin" />
+            ) : (
+              <ArrowBigDownDash />
+            )}
             <span>Descargar Ficha</span>
           </Button>
-
         </DialogFooter>
-
       </DialogContent>
     </Dialog>
   )

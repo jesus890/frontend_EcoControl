@@ -39,7 +39,7 @@ export function AppSidebar() {
     },
     {
       title: "Trazabilidad",
-      url: "/",
+      url: "/trazabilidad",
       icon: FileSearchCorner,
     },
     {

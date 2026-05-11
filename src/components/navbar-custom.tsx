@@ -28,6 +28,10 @@ export function NavBarCustom() {
       case "/manejo-especial":
         rutename = "Residuos Sólidos Urbanos";
       break;
+
+      case "/trazabilidad":
+        rutename = "Búsqueda de Trazabilidad";
+      break;
     }
 
     setPathName(rutename);

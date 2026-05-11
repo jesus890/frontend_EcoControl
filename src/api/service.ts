@@ -96,8 +96,7 @@ export const crearReporteResiduosPeligroso = (values:ResiduoPeligroSaveI) =>
             axiosAuth.post('/crearReporteResiduosPeligroso', values)
         );
 
-
-export const obtenerGenerarNumManifiesto = () =>
+export const crearSalidaResiduosPeligroso = (folio:string) =>
     apiRequest<any>(
-            axiosAuth.post('/generarNumManifiesto', {})
+            axiosAuth.post('/crearSalidaResiduosPeligroso', {folio: folio})
         );

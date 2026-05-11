@@ -27,10 +27,9 @@ export interface ResiduoPeligroSaveI {
     descEnvase: String,
     descGenerador: String,
     descArea: String,
-    numManifiesto: String,
     descDestinoFinal: String|null,
     descAutorizacion: String|null,
-    fEntrada: Date;
+    fEntrada: string;
 }
 
 
@@ -39,6 +38,7 @@ export interface ResiduoPeligroPdfI {
     descGenerador: string,
     descArea: string,
     cantidad: number,
-    fEntrada: Date;
+    fEntrada: string|null;
+    fSalida : string|null;
     uuid: string|null;
 }

@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import Home from "@/pages/Home";
 import ResiduosPeligrosos from "@/pages/ResiduosPeligrosos";
 import ManejoEspecial from "@/pages/ManejoEspecial";
+import Trazabilidad from "@/pages/Trazabilidad";
 import Layout from '@/app/layout';
 
 export const appRouter = createBrowserRouter([
@@ -32,6 +33,16 @@ export const appRouter = createBrowserRouter([
             {
                 index: true,
                 element: <ManejoEspecial />
+            },
+        ],
+    },
+    {
+        path: '/trazabilidad',
+        element: <Layout />,
+        children: [
+            {
+                index: true,
+                element: <Trazabilidad />
             },
         ],
     },
