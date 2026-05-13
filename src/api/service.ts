@@ -1,6 +1,8 @@
 import { apiRequest } from "@/lib/api";
 import { axiosAuth } from "@/lib/axios";
-import type { ManejoEspecialI, ResiduoPeligroPdfI , ResiduoPeligroSaveI } from "@/interfaces/interfaces";
+import type { ResiduoSolido1PdfI, ResiduoSolido2PdfI, ResiduoPeligroPdfI , ResiduoPeligroSaveI, ResiduoSolidoSave1I } from "@/interfaces/interfaces";
+
+
 
 export const listadoAreaGeneracionRP = (tipoGenerador:Number) =>
     apiRequest<any>(
@@ -75,22 +77,29 @@ export const listadoTransportistasRME = () =>
         ); 
 
 
-
-
-
-
-
-export const generarReporteManejoEspecial = (values:ManejoEspecialI) =>
+//reportes residuos solidos urbanos
+export const generarReporteRSU = (values:ResiduoSolido1PdfI) =>
     apiRequest<any>(
-            axiosAuth.post('/generarReporteManejoEspecial', values)
+            axiosAuth.post('/generarReporteRSU', values)
         );
  
+export const generarReporteRME = (values:ResiduoSolido2PdfI) =>
+    apiRequest<any>(
+            axiosAuth.post('/generarReporteRME', values)
+        );
+
+export const crearReporteRSU = (values:ResiduoSolidoSave1I) =>
+    apiRequest<any>(
+            axiosAuth.post('/crearReporteRSU', values)
+        );
+
+
+//reporte de residuo peligroso
 export const generarReporteResiduoPeligroso = (values:ResiduoPeligroPdfI) =>
     apiRequest<any>(
             axiosAuth.post('/generarReporteResiduosPeligroso', values)
         );  
 
-        
 export const crearReporteResiduosPeligroso = (values:ResiduoPeligroSaveI) =>
     apiRequest<any>(
             axiosAuth.post('/crearReporteResiduosPeligroso', values)

@@ -5,9 +5,13 @@ import ManejoEspecial from "@/pages/ManejoEspecial";
 import Trazabilidad from "@/pages/Trazabilidad";
 import Layout from '@/app/layout';
 
+
+import NotFound from "@/pages/NotFound";
+
+
 export const appRouter = createBrowserRouter([
     {
-        path: '/',
+        path: '/mml/environment/',
         element: <Layout />,
         children: [
             {
@@ -17,7 +21,7 @@ export const appRouter = createBrowserRouter([
         ],
     },
     {
-        path: '/residuos-peligrosos',
+        path: '/mml/environment/residuos-peligrosos',
         element: <Layout />,
         children: [
             {
@@ -27,7 +31,7 @@ export const appRouter = createBrowserRouter([
         ],
     },
     {
-        path: '/manejo-especial',
+        path: '/mml/environment/manejo-especial',
         element: <Layout />,
         children: [
             {
@@ -37,7 +41,7 @@ export const appRouter = createBrowserRouter([
         ],
     },
     {
-        path: '/trazabilidad',
+        path: '/mml/environment/trazabilidad',
         element: <Layout />,
         children: [
             {
@@ -46,6 +50,8 @@ export const appRouter = createBrowserRouter([
             },
         ],
     },
-
-    
+    {
+        path: "*",
+        element: <NotFound />,
+    },
 ]) 

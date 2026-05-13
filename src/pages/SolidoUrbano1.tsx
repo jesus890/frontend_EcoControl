@@ -5,7 +5,7 @@ import { CirclePlus } from "lucide-react"
 import { Tag } from "lucide-react"
 
 //card
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 
 //field
 import {
@@ -33,13 +33,17 @@ import {
 } from "@/components/ui/combobox"
 
 //dialog
-import { DialogManejoEspecial } from "@/components/dialog-manejo-especial"
+import { DialogSolidoUrbano1 } from "@/components/dialog-solido-urbano-1";
+
+import { toast } from "sonner";
+import { MessageCircleCheck } from "lucide-react";
+import { MessageCircleWarning } from "lucide-react";
 
 //calendar
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/ui/calendar";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 //validaciones y forms
 import { useForm, Controller } from "react-hook-form"
@@ -47,25 +51,40 @@ import type { SubmitHandler } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 
-import type { CatalogoI } from "@/interfaces/interfaces"
+import type { CatalogoI, ResiduoSolido1PdfI } from "@/interfaces/interfaces"
+
+import { crearReporteRSU } from "../api/service";
 
 import {
   listadoTipoResiduoRSU,
   listadoTipoGeneradorRSU_RME,
   listadoAreaGeneraionRSU_RME,
-  listadoDestinoFinalRSU
+  listadoDestinoFinalRSU,
 } from "../api/service"
 
 export function SolidoUrbano1() {
-  const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false)
 
-  const [generadores, setGeneradores] = useState<CatalogoI[]>([]);
-  const [areas, setAreas] = useState<CatalogoI[]>([]);
-  const [residuos, setTipoResiduo] = useState<CatalogoI[]>([]);
-  const [destinoFinal, setDestinoFinal] = useState<CatalogoI[]>([]);
+  const [generadores, setGeneradores] = useState<CatalogoI[]>([])
+  const [areas, setAreas] = useState<CatalogoI[]>([])
+  const [residuos, setTipoResiduo] = useState<CatalogoI[]>([])
+  const [destinoFinal, setDestinoFinal] = useState<CatalogoI[]>([])
 
+  //dia actual
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const todayString = `${today.getFullYear()}-${String(
+    today.getMonth() + 1
+  ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+  const [dataPdf, setdataPdf] = useState<ResiduoSolido1PdfI>({
+    nombreResiduo: "",
+    descGenerador: "",
+    descArea: "",
+    cantidad: 1,
+    fEntrada: todayString,
+    fSalida: todayString,
+    descDestinoFinal: "",
+  })
 
   //schema
   const schema = z.object({
@@ -94,18 +113,16 @@ export function SolidoUrbano1() {
         message: "Selecciona un tipo de tipo de area",
       }),
 
-      tipoDestinoFinal: z
+    tipoDestinoFinal: z
       .string()
       .nullable()
       .refine((val) => val !== null && val !== "", {
         message: "Selecciona un destino final",
       }),
 
-    fEntrada: z.date().min(new Date(), { error: "Fecha invalida" }),
+    fEntrada: z.string().min(1, "Fecha requerida"),
 
-    fSalida: z.date(),
-
-    observaciones: z.string(),
+    fSalida: z.string().min(1, "Fecha requerida"),
   })
 
   type FormValues = z.infer<typeof schema>
@@ -118,9 +135,9 @@ export function SolidoUrbano1() {
       cantidad: 0,
       tipoGenerador: "",
       tipoArea: "",
-      fEntrada: new Date(),
-      fSalida: new Date(),
-      observaciones: "",
+      fEntrada: todayString,
+      fSalida: todayString,
+      tipoDestinoFinal: "",
     },
     mode: "onBlur",
   })
@@ -131,20 +148,19 @@ export function SolidoUrbano1() {
     cargarCatalogos()
   }, [])
 
-  //load catalogos
+  //carga los diferentes catalogos que no dependen de otro
   const cargarCatalogos = async () => {
-
-    const [generadores, residuos , destinoFinal] = await Promise.all([
+    const [generadores, residuos, destinoFinal] = await Promise.all([
       listadoTipoGeneradorRSU_RME(),
       listadoTipoResiduoRSU(),
-      listadoDestinoFinalRSU()
+      listadoDestinoFinalRSU(),
     ])
 
-    console.log({generadores})
+    console.log({ generadores })
 
-    setGeneradores(generadores.data);
-    setTipoResiduo(residuos.data);
-    setDestinoFinal(destinoFinal.data);
+    setGeneradores(generadores.data)
+    setTipoResiduo(residuos.data)
+    setDestinoFinal(destinoFinal.data)
   }
 
   //al seleccionar un valor de generador , actualiza el listado de areas acorde al primer filtro
@@ -162,17 +178,67 @@ export function SolidoUrbano1() {
     }
   }
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
+  //guarda la información
+  const onSubmit: SubmitHandler<FormValues> = async(data) => {
+    try
+    {
+      const dataToSave = {
+        descResiduo: data.tipoResiduo,
+        cantidad: data.cantidad,
+        descGenerador: data.tipoGenerador,
+        descArea: data.tipoArea,
+        fEntrada: data.fEntrada,
+        fSalida: data.fSalida,
+        descDestinoFinal: data.tipoDestinoFinal
+      }
+
+      const result = await crearReporteRSU(dataToSave);
+
+      if(result)
+      {
+        toast(
+          "El registro ha sido creado!", //sucess
+          {
+            icon: <MessageCircleCheck className="text-verdecito" />,
+            className: "bg-white !text-negrito !font-bold border !shadow-sm",
+          }
+        )
+      }
+    }
+    catch(ex)
+    {
+      toast(
+        "Ocurrio un error, vaya esto es incomodo", //error
+        {
+          icon: <MessageCircleWarning className="text-rojito" />,
+          className: "bg-white !text-negrito !font-bold border !shadow-sm",
+        }
+      )
+    }
+  }
+
+  const previsualizarPDF = () => {
+    const dataToGeneratePDF = {
+      nombreResiduo: String(values.tipoResiduo),
+      descGenerador: String(values.tipoGenerador),
+      descArea: String(values.tipoArea),
+      cantidad: values.cantidad,
+      fEntrada: values.fEntrada,
+      fSalida: values.fEntrada,
+      descDestinoFinal: String(values.tipoDestinoFinal),
+    }
+
+    setdataPdf(dataToGeneratePDF)
     setOpen(true)
   }
 
   return (
     <div className="p-5">
-      <Card tabIndex={0} className="w-full h-[70vh] shadow-md">
+      <Card tabIndex={0} className="h-[70vh] w-full shadow-md">
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
-              
+
               {/* Tipo del residuo */}
               <Controller
                 name="tipoResiduo"
@@ -367,11 +433,16 @@ export function SolidoUrbano1() {
                     <Popover>
                       <PopoverTrigger disabled>
                         <div
-                          className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-left text-base text-placeholder transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+                          className="h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 py-1 text-left text-base text-placeholder transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm"
                           aria-invalid={fieldState.invalid}
                         >
                           {field.value
-                            ? field.value.toLocaleDateString()
+                            ? (() => {
+                                const [year, month, day] =
+                                  field.value.split("-")
+
+                                return `${day}/${month}/${year}`
+                              })()
                             : "Selecciona una fecha ..."}
                         </div>
                       </PopoverTrigger>
@@ -382,10 +453,28 @@ export function SolidoUrbano1() {
                       >
                         <Calendar
                           mode="single"
-                          selected={field.value}
-                          defaultMonth={field.value}
+                          selected={
+                            field.value
+                              ? new Date(field.value + "T00:00:00")
+                              : undefined
+                          }
+                          defaultMonth={
+                            field.value
+                              ? new Date(field.value + "T00:00:00")
+                              : new Date()
+                          }
                           captionLayout="dropdown"
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (!date) return
+
+                            const formatted = `${date.getFullYear()}-${String(
+                              date.getMonth() + 1
+                            ).padStart(2, "0")}-${String(
+                              date.getDate()
+                            ).padStart(2, "0")}`
+
+                            field.onChange(formatted)
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -399,7 +488,7 @@ export function SolidoUrbano1() {
                 )}
               />
 
-              {/* Fecha de entrada */}
+              {/* Fecha de salida */}
               <Controller
                 name="fSalida"
                 control={form.control}
@@ -409,17 +498,22 @@ export function SolidoUrbano1() {
                       htmlFor="fSalida"
                       className="text-[13px] font-bold text-negrito"
                     >
-                      Fecha de Entrada *
+                      Fecha de Salida *
                     </FieldLabel>
 
                     <Popover>
                       <PopoverTrigger disabled>
                         <div
-                          className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-left text-base text-placeholder transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40"
+                          className="h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 py-1 text-left text-base text-placeholder transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm"
                           aria-invalid={fieldState.invalid}
                         >
                           {field.value
-                            ? field.value.toLocaleDateString()
+                            ? (() => {
+                                const [year, month, day] =
+                                  field.value.split("-")
+
+                                return `${day}/${month}/${year}`
+                              })()
                             : "Selecciona una fecha ..."}
                         </div>
                       </PopoverTrigger>
@@ -430,10 +524,28 @@ export function SolidoUrbano1() {
                       >
                         <Calendar
                           mode="single"
-                          selected={field.value}
-                          defaultMonth={field.value}
+                          selected={
+                            field.value
+                              ? new Date(field.value + "T00:00:00")
+                              : undefined
+                          }
+                          defaultMonth={
+                            field.value
+                              ? new Date(field.value + "T00:00:00")
+                              : new Date()
+                          }
                           captionLayout="dropdown"
-                          onSelect={field.onChange}
+                          onSelect={(date) => {
+                            if (!date) return
+
+                            const formatted = `${date.getFullYear()}-${String(
+                              date.getMonth() + 1
+                            ).padStart(2, "0")}-${String(
+                              date.getDate()
+                            ).padStart(2, "0")}`
+
+                            field.onChange(formatted)
+                          }}
                         />
                       </PopoverContent>
                     </Popover>
@@ -492,17 +604,30 @@ export function SolidoUrbano1() {
                   )
                 }}
               />
-              
-
             </FieldGroup>
 
             <Button
               type="submit"
-              className="cursor-pointer hover:bg-[#305a78] focus:bg-[#305a78] focus:outline-none"
+              className="mt-4 ml-4 cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
+            >
+              <CirclePlus />
+              <span>Registrar Sólido urbano</span>
+            </Button>
+
+            <Button
+              onClick={form.handleSubmit(previsualizarPDF)}
+              className="mt-4 ml-4 cursor-pointer p-4 hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
             >
               <Tag />
-              <span>Vista Previa Etiqueta </span>
+              <span>Vista Previa Etiqueta</span>
             </Button>
+
+            <DialogSolidoUrbano1 
+              open={open}
+              setOpen={setOpen}
+              data={dataPdf}
+            />
+
           </form>
         </CardContent>
       </Card>

@@ -1,10 +1,7 @@
-import { useLocation } from "react-router"
+
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -14,7 +11,6 @@ import { NavBarCustom } from "@/components/navbar-custom";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,

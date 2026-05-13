@@ -21,6 +21,7 @@ interface PropI {
 }
 
 export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
+  
   const [reporteData, setReporteData] = useState<ReporteI>()
   const [loading, setLoading] = useState<Boolean>(false)
 

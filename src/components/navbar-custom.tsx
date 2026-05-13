@@ -17,19 +17,19 @@ export function NavBarCustom() {
 
     switch(location.pathname)
     {
-      case '/':
+      case '/mml/environment/':
         rutename = "Dashboard";
       break;
       
-      case "/residuos-peligrosos":
+      case "/mml/environment/residuos-peligrosos":
         rutename = "Residuos Peligrosos"
       break;
 
-      case "/manejo-especial":
+      case "/mml/environment/manejo-especial":
         rutename = "Residuos Sólidos Urbanos";
       break;
 
-      case "/trazabilidad":
+      case "/mml/environment/trazabilidad":
         rutename = "Búsqueda de Trazabilidad";
       break;
     }

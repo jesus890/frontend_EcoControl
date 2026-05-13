@@ -13,17 +13,17 @@ import { ArrowBigDownDash } from 'lucide-react';
 import { Loader } from 'lucide-react';
 
 import { Field, FieldGroup } from "@/components/ui/field";
-import type { ReporteI, ManejoEspecialI } from "@/interfaces/interfaces";
-import { generarReporteManejoEspecial } from "../api/service";
+import type { ReporteI, ResiduoSolido2PdfI } from "@/interfaces/interfaces";
+import { generarReporteRME } from "../api/service";
 
 
 interface PropI {
   open: boolean,
   setOpen: (prev: boolean) => void;
-  data : ManejoEspecialI
+  data : ResiduoSolido2PdfI
 }
 
-export function DialogManejoEspecial({open, setOpen, data } : PropI) {
+export function DialogSolidoUrbano2({open, setOpen, data } : PropI) {
 
   const [reporteData, setReporteData] = useState<ReporteI>();
   const [loading, setLoading] = useState<Boolean>(false);
@@ -36,19 +36,8 @@ export function DialogManejoEspecial({open, setOpen, data } : PropI) {
 
 
   const getReporte = async() => {
-    const dataToSend = {
-      tipoResiduo: data.tipoResiduo,
-      cantidad: data.cantidad,
-      tipoGenerador: data.tipoGenerador,
-      tipoArea: data.tipoArea,
-      fEntrada: data.fEntrada,
-      fSalida: data.fSalida,
-      observaciones: data.observaciones
-    }; 
-
-    const result = await generarReporteManejoEspecial(dataToSend);
+    const result = await generarReporteRME(data);
     setReporteData(result.data);
-
   }
 
   const descargarFicha = async() => {

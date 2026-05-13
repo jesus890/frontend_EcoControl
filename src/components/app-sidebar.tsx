@@ -24,22 +24,22 @@ export function AppSidebar() {
   const items = [
     {
       title: "Inicio",
-      url: "/",
+      url: "/mml/environment/",
       icon: LayoutDashboard,
     },
     {
       title: "Residuos Peligrosos",
-      url: "/residuos-peligrosos",
+      url: "/mml/environment/residuos-peligrosos",
       icon: TriangleAlert,
     },
     {
       title: "Residuos sólidos Urbanos",
-      url: "/manejo-especial",
+      url: "/mml/environment/manejo-especial",
       icon: PackageOpen,
     },
     {
       title: "Trazabilidad",
-      url: "/trazabilidad",
+      url: "/mml/environment/trazabilidad",
       icon: FileSearchCorner,
     },
     {

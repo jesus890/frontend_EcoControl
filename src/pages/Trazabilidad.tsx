@@ -77,6 +77,7 @@ export function Trazabilidad() {
           fEntrada: result.data.fecha_entrada,
           fSalida: result.data.fecha_salida,
           uuid: result.data.uuid,
+          numManifiesto: result.data.numero_manifiesto
         }
 
         const result2 = await generarReporteResiduoPeligroso(dataToGeneratePDF)
@@ -91,8 +92,13 @@ export function Trazabilidad() {
         )
       }
     } catch (ex) {
-      console.log({ex})
-      toast.error("Ocurrio un error, vaya esto es incomodo")
+      toast(
+        "Ocurrio un error, vaya esto es incomodo", //error
+        {
+          icon: <MessageCircleWarning className="text-rojito" />,
+          className: "bg-white !text-negrito !font-bold border !shadow-sm",
+        }
+      )
     }
   }
 
