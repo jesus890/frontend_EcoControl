@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 
 //icons
-import { CirclePlus } from "lucide-react"
-import { Tag } from "lucide-react"
+import { CirclePlus } from "lucide-react";
+import { Tag } from "lucide-react";
 
 //card
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card";
 
 //field
 import {
@@ -13,14 +13,14 @@ import {
   FieldGroup,
   FieldLabel,
   FieldError,
-} from "@/components/ui/field"
+} from "@/components/ui/field";
 
 //popover
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 //combobox
 import {
@@ -30,24 +30,29 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
-} from "@/components/ui/combobox"
+} from "@/components/ui/combobox";
 
 //dialog
-import { DialogSolidoUrbano2 } from "@/components/dialog-solido-urbano-2"
+import { DialogSolidoUrbano2 } from "@/components/dialog-solido-urbano-2";
+
+//Toast
+import { toast } from "sonner";
+import { MessageCircleCheck } from "lucide-react";
+import { MessageCircleWarning } from "lucide-react";
 
 //calendar
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar } from "@/components/ui/calendar";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 //validaciones y forms
-import { useForm, Controller } from "react-hook-form"
-import type { SubmitHandler } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, Controller } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { CatalogoI, ResiduoSolido2PdfI } from "@/interfaces/interfaces"
+import type { CatalogoI, ResiduoSolido2PdfI } from "@/interfaces/interfaces";
 
 import {
   listadoTipoGeneradorRSU_RME,
@@ -55,17 +60,22 @@ import {
   listadoTipoResiduoRME,
   listadoTipoTratamientoRME,
   listadoTransportistasRME,
-} from "../api/service"
+  crearReporteRME
+} from "../api/service";
 
 export function SolidoUrbano2() {
 
   const [open, setOpen] = useState<boolean>(false)
 
-  const [generadores, setGeneradores] = useState<CatalogoI[]>([])
-  const [areas, setAreas] = useState<CatalogoI[]>([])
-  const [residuos, setTipoResiduo] = useState<CatalogoI[]>([])
-  const [tratamientos, setTipoTratamiento] = useState<CatalogoI[]>([])
-  const [transportistas, setTipoTransportistas] = useState<CatalogoI[]>([])
+  const [generadores, setGeneradores] = useState<CatalogoI[]>([]);
+  const [areas, setAreas] = useState<CatalogoI[]>([]);
+  const [residuos, setTipoResiduo] = useState<CatalogoI[]>([]);
+  const [tratamientos, setTipoTratamiento] = useState<CatalogoI[]>([]);
+  const [transportistas, setTipoTransportistas] = useState<CatalogoI[]>([]);
+
+  //botones
+  const [disablePreview, setDisablePreview] = useState<boolean>(true);
+  const [disableRegistrar, setDisableRegistrar] = useState<boolean>(false);
 
   //dia actual
   const today = new Date()
@@ -82,7 +92,7 @@ export function SolidoUrbano2() {
     fSalida: todayString,
     descTransportistas: "",
     descTratamiento: "",
-    manifiesto: "",
+    manifiesto: ""
   })
 
   //schema
@@ -128,9 +138,7 @@ export function SolidoUrbano2() {
       .nullable()
       .refine((val) => val !== null && val !== "", {
         message: "Selecciona un tipo de tipo de tratamiento",
-      }),
-
-    manifiestos: z.string(),
+      })
   })
 
   type FormValues = z.infer<typeof schema>
@@ -146,8 +154,7 @@ export function SolidoUrbano2() {
       fEntrada: todayString,
       fSalida: todayString,
       tipoTransportista: "",
-      tipoTratamiento: "",
-      manifiestos: "",
+      tipoTratamiento: ""
     },
     mode: "onBlur",
   })
@@ -189,26 +196,65 @@ export function SolidoUrbano2() {
     }
   }
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log({data})
-    setOpen(true)
+  const onSubmit: SubmitHandler<FormValues> = async(data) => {
+    try
+    {
+      const dataToSave = {
+        descResiduo: data.tipoResiduo,
+        cantidad: data.cantidad,
+        descGenerador: data.tipoGenerador,
+        descArea: data.tipoArea,
+        fEntrada: data.fEntrada,
+        fSalida: data.fSalida,
+        descTratamiento: data.tipoTratamiento,
+        descTransportista: data.tipoTransportista
+      }
+
+      const result = await crearReporteRME(dataToSave);
+
+      if(result)
+      {
+        toast(
+          "El registro ha sido creado!", //sucess
+          {
+            icon: <MessageCircleCheck className="text-verdecito" />,
+            className: "bg-white !text-negrito !font-bold border !shadow-sm",
+          }
+        )
+
+        //manda el preview
+        const dataToGeneratePDF = {
+          nombreResiduo: result.data.tipo_residuo?.descripcion,
+          descGenerador: result.data.tipo_generador?.descripcion,
+          descArea: result.data.area_generacion?.descripcion,
+          cantidad: values.cantidad,
+          fEntrada: values.fEntrada,
+          fSalida: values.fEntrada,
+          descTratamiento: result.data.tipo_tratamiento?.descripcion,
+          descTransportistas: result.data.transportista?.descripcion,
+          manifiesto: result.data.numero_manifiesto
+        }
+
+        setdataPdf(dataToGeneratePDF);
+
+        setDisablePreview(false);
+        setDisableRegistrar(true);
+      }
+    }
+    catch(ex)
+    {
+      toast(
+        "Ocurrio un error, vaya esto es incomodo", //error
+        {
+          icon: <MessageCircleWarning className="text-rojito" />,
+          className: "bg-white !text-negrito !font-bold border !shadow-sm",
+        }
+      )
+    }
   }
 
   const previsualizarPDF = () => {
-    const dataToGeneratePDF = {
-      nombreResiduo: String(values.tipoResiduo),
-      descGenerador: String(values.tipoGenerador),
-      descArea: String(values.tipoArea),
-      cantidad: values.cantidad,
-      fEntrada: values.fEntrada,
-      fSalida: values.fEntrada,
-      descTransportistas: String(values.tipoTransportista),
-      descTratamiento: String(values.tipoTratamiento),
-      manifiesto: String(values.manifiestos),
-    }
-
-    setdataPdf(dataToGeneratePDF)
-    setOpen(true)
+    setOpen(true);
   }
 
   return (
@@ -282,6 +328,7 @@ export function SolidoUrbano2() {
                       placeholder="Ej. 25"
                       className="placeholder:text-placeholder"
                       value={field.value ?? ""}
+                      onClick={()=> field.onChange("")}
                       onBlur={field.onBlur}
                       name={field.name}
                       ref={field.ref}
@@ -629,46 +676,11 @@ export function SolidoUrbano2() {
                 }}
               />
 
-              {/* Manifiestos */}
-              <Controller
-                name="manifiestos"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel
-                      htmlFor="manifiestos"
-                      className="text-[13px] font-bold text-negrito"
-                    >
-                      Manifiestos
-                    </FieldLabel>
-
-                    <Input
-                      id="manifiestos"
-                      type="text"
-                      placeholder="Ej. Aceite Quemado"
-                      className="placeholder:text-placeholder"
-                      value={field.value ?? ""}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        field.onChange(value)
-                      }}
-                    />
-
-                    {fieldState.error && (
-                      <FieldError className="text-rojito">
-                        {fieldState.error.message}
-                      </FieldError>
-                    )}
-                  </Field>
-                )}
-              />
             </FieldGroup>
 
             <Button
               type="submit"
+              disabled={disableRegistrar}
               className="mt-4 ml-4 cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
             >
               <CirclePlus />
@@ -676,6 +688,7 @@ export function SolidoUrbano2() {
             </Button>
 
             <Button
+              disabled={disablePreview}
               onClick={form.handleSubmit(previsualizarPDF)}
               className="mt-4 ml-4 cursor-pointer p-4 hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
             >

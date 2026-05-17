@@ -90,7 +90,8 @@ export function ResiduosPeligrosos() {
   ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
 
   const [dataPdf, setdataPdf] = useState<ResiduoPeligroPdfI>({
-    nombreResiduo: "",
+    descResiduo: "",
+    descSubTipoResiduo: "",
     descGenerador: "",
     descArea: "",
     cantidad: 1,
@@ -102,7 +103,6 @@ export function ResiduosPeligrosos() {
 
   //schema
   const schema = z.object({
-    nombreResiduo: z.string().min(1, "El nombre es obligatorio"),
 
     tipoResiduo: z.string().refine((val) => val !== null && val !== "", {
       message: "Selecciona un tipo de residuo",
@@ -140,9 +140,8 @@ export function ResiduosPeligrosos() {
     resolver: zodResolver(schema),
     defaultValues: {
       cantidad: 0,
-      nombreResiduo: "",
       tipoResiduo: "",
-      subTipoResiduo: "",
+      subTipoResiduo: null,
       tipoEnvase: "",
       tipoGenerador: "",
       tipoArea: "",
@@ -225,7 +224,8 @@ export function ResiduosPeligrosos() {
     try
     {
       const dataToSave = {
-        nombreResiduo: data.nombreResiduo,
+        descResiduo: data.tipoResiduo,
+        descSubTipoResiduo: data.subTipoResiduo,
         cantidad: data.cantidad,
         descEnvase: data.tipoEnvase,
         descGenerador: data.tipoGenerador,
@@ -263,7 +263,8 @@ export function ResiduosPeligrosos() {
 
   const previsualizarPDF = () => {
     const dataToGeneratePDF = {
-      nombreResiduo: values.nombreResiduo,
+      descResiduo: String(values.tipoResiduo),
+      descSubTipoResiduo: String(values.subTipoResiduo),
       descGenerador: String(values.tipoGenerador),
       descArea: String(values.tipoArea),
       cantidad: values.cantidad,
@@ -294,43 +295,7 @@ export function ResiduosPeligrosos() {
           <CardContent>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
-                {/* Nombre */}
-                <Controller
-                  name="nombreResiduo"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor="nombreResiduo"
-                        className="text-[13px] font-bold text-negrito"
-                      >
-                        Nombre del Residuo *
-                      </FieldLabel>
-
-                      <Input
-                        id="nombreResiduo"
-                        type="text"
-                        placeholder="Ej. Aceite Quemado"
-                        className="placeholder:text-placeholder"
-                        value={field.value ?? ""}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
-                          const value = e.target.value
-                          field.onChange(value)
-                        }}
-                      />
-
-                      {fieldState.error && (
-                        <FieldError className="text-rojito">
-                          {fieldState.error.message}
-                        </FieldError>
-                      )}
-                    </Field>
-                  )}
-                />
-
+                
                 {/* TipoResiduo */}
                 <Controller
                   name="tipoResiduo"
@@ -442,6 +407,7 @@ export function ResiduosPeligrosos() {
                         className="placeholder:text-placeholder"
                         value={field.value ?? ""}
                         onBlur={field.onBlur}
+                        onClick={()=> field.onChange("")}
                         name={field.name}
                         ref={field.ref}
                         onChange={(e) => {

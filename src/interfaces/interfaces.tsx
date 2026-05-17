@@ -5,11 +5,18 @@ export interface CatalogoI {
     updated_at: Date | null
 }
 
+export interface CatalogoSimple {
+    id: Number;
+    descripcion: String;
+}
+
 export interface ReporteI {
     photo_blob: string;
     pdf_blob: string;
 }
 
+
+//Solidos Urbanos
 export interface ManejoEspecialI {
     tipoResiduo: string,
     cantidad: number,
@@ -52,9 +59,24 @@ export interface ResiduoSolidoSave1I {
     descDestinoFinal: String|null; 
 }
 
+export interface ResiduoSolidoSave2I {
+    descResiduo: String|null,
+    cantidad: Number,
+    descGenerador: String|null,
+    descArea: String|null,
+    fEntrada: String;
+    fSalida: String;
+    descTratamiento: String|null;
+    descTransportista: String|null; 
+}
+
+
+
+//Residuos Peligrosos 
 
 export interface ResiduoPeligroSaveI {
-    nombreResiduo: String,
+    descResiduo: String,
+    descSubTipoResiduo: String|null,
     cantidad: Number,
     descEnvase: String,
     descGenerador: String,
@@ -66,7 +88,8 @@ export interface ResiduoPeligroSaveI {
 
 
 export interface ResiduoPeligroPdfI {
-    nombreResiduo: string,
+    descResiduo: string,
+    descSubTipoResiduo: string|null;
     descGenerador: string,
     descArea: string,
     cantidad: number,
@@ -74,4 +97,18 @@ export interface ResiduoPeligroPdfI {
     fSalida : string|null;
     uuid: string|null;
     numManifiesto: string|null;
+}
+
+
+export interface ListResiduoPeligroso {
+    id: number;
+    uuid: string;
+    tipo_residuo: CatalogoSimple;
+    subtipo_residuo: CatalogoSimple | null;
+    cantidad: number;
+    tipo_generador: CatalogoSimple;
+    area_generacion: CatalogoSimple;
+    tipo: string;
+    ffecha_entrada: string;
+    fecha_entrada: Date;
 }

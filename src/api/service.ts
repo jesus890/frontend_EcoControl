@@ -1,6 +1,6 @@
 import { apiRequest } from "@/lib/api";
 import { axiosAuth } from "@/lib/axios";
-import type { ResiduoSolido1PdfI, ResiduoSolido2PdfI, ResiduoPeligroPdfI , ResiduoPeligroSaveI, ResiduoSolidoSave1I } from "@/interfaces/interfaces";
+import type { ResiduoSolido1PdfI, ResiduoSolido2PdfI, ResiduoPeligroPdfI , ResiduoPeligroSaveI, ResiduoSolidoSave1I , ResiduoSolidoSave2I} from "@/interfaces/interfaces";
 
 
 
@@ -93,6 +93,10 @@ export const crearReporteRSU = (values:ResiduoSolidoSave1I) =>
             axiosAuth.post('/crearReporteRSU', values)
         );
 
+ export const crearReporteRME = (values:ResiduoSolidoSave2I) =>
+    apiRequest<any>(
+            axiosAuth.post('/crearReporteRME', values)
+        );       
 
 //reporte de residuo peligroso
 export const generarReporteResiduoPeligroso = (values:ResiduoPeligroPdfI) =>
@@ -108,4 +112,11 @@ export const crearReporteResiduosPeligroso = (values:ResiduoPeligroSaveI) =>
 export const crearSalidaResiduosPeligroso = (folio:string) =>
     apiRequest<any>(
             axiosAuth.post('/crearSalidaResiduosPeligroso', {folio: folio})
+        );
+
+
+//listado de solidos peligrosos y residuos peligrosos
+export const listadoResiduos = () =>
+    apiRequest<any>(
+            axiosAuth.post('/listado_residuos', {})
         );

@@ -35,6 +35,7 @@ import {
 //dialog
 import { DialogSolidoUrbano1 } from "@/components/dialog-solido-urbano-1";
 
+//Toast
 import { toast } from "sonner";
 import { MessageCircleCheck } from "lucide-react";
 import { MessageCircleWarning } from "lucide-react";
@@ -63,12 +64,18 @@ import {
 } from "../api/service"
 
 export function SolidoUrbano1() {
+
   const [open, setOpen] = useState<boolean>(false)
 
-  const [generadores, setGeneradores] = useState<CatalogoI[]>([])
-  const [areas, setAreas] = useState<CatalogoI[]>([])
-  const [residuos, setTipoResiduo] = useState<CatalogoI[]>([])
-  const [destinoFinal, setDestinoFinal] = useState<CatalogoI[]>([])
+  //catalogos
+  const [generadores, setGeneradores] = useState<CatalogoI[]>([]);
+  const [areas, setAreas] = useState<CatalogoI[]>([]);
+  const [residuos, setTipoResiduo] = useState<CatalogoI[]>([]);
+  const [destinoFinal, setDestinoFinal] = useState<CatalogoI[]>([]);
+
+  //botones
+  const [disablePreview, setDisablePreview] = useState<boolean>(true);
+  const [disableRegistrar, setDisableRegistrar] = useState<boolean>(false);
 
   //dia actual
   const today = new Date()
@@ -203,6 +210,22 @@ export function SolidoUrbano1() {
             className: "bg-white !text-negrito !font-bold border !shadow-sm",
           }
         )
+
+        //manda el preview
+        const dataToGeneratePDF = {
+          nombreResiduo: result.data.tipo_residuo?.descripcion,
+          descGenerador: result.data.tipo_generador?.descripcion,
+          descArea: result.data.area_generacion?.descripcion,
+          cantidad: values.cantidad,
+          fEntrada: values.fEntrada,
+          fSalida: values.fEntrada,
+          descDestinoFinal: result.data.destino_final?.descripcion,
+        }
+
+        setdataPdf(dataToGeneratePDF);
+
+        setDisablePreview(false);
+        setDisableRegistrar(true);
       }
     }
     catch(ex)
@@ -218,17 +241,6 @@ export function SolidoUrbano1() {
   }
 
   const previsualizarPDF = () => {
-    const dataToGeneratePDF = {
-      nombreResiduo: String(values.tipoResiduo),
-      descGenerador: String(values.tipoGenerador),
-      descArea: String(values.tipoArea),
-      cantidad: values.cantidad,
-      fEntrada: values.fEntrada,
-      fSalida: values.fEntrada,
-      descDestinoFinal: String(values.tipoDestinoFinal),
-    }
-
-    setdataPdf(dataToGeneratePDF)
     setOpen(true)
   }
 
@@ -305,6 +317,7 @@ export function SolidoUrbano1() {
                       className="placeholder:text-placeholder"
                       value={field.value ?? ""}
                       onBlur={field.onBlur}
+                      onClick={()=> field.onChange("")}
                       name={field.name}
                       ref={field.ref}
                       onChange={(e) => {
@@ -608,6 +621,7 @@ export function SolidoUrbano1() {
 
             <Button
               type="submit"
+              disabled={disableRegistrar}
               className="mt-4 ml-4 cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
             >
               <CirclePlus />
@@ -615,6 +629,7 @@ export function SolidoUrbano1() {
             </Button>
 
             <Button
+              disabled={disablePreview}
               onClick={form.handleSubmit(previsualizarPDF)}
               className="mt-4 ml-4 cursor-pointer p-4 hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
             >

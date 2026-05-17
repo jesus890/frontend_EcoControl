@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -7,12 +7,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Field, FieldGroup } from "@/components/ui/field"
-import type { ReporteI, ResiduoPeligroPdfI } from "@/interfaces/interfaces"
-import { generarReporteResiduoPeligroso } from "../api/service"
-import { ArrowBigDownDash } from "lucide-react"
-import { Loader } from "lucide-react"
+} from "@/components/ui/dialog";
+import { Field, FieldGroup } from "@/components/ui/field";
+import type { ReporteI, ResiduoPeligroPdfI } from "@/interfaces/interfaces";
+import { generarReporteResiduoPeligroso } from "../api/service";
+import { ArrowBigDownDash } from "lucide-react";
+import { Loader } from "lucide-react";
 
 interface PropI {
   open: boolean
@@ -22,8 +22,8 @@ interface PropI {
 
 export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
   
-  const [reporteData, setReporteData] = useState<ReporteI>()
-  const [loading, setLoading] = useState<Boolean>(false)
+  const [reporteData, setReporteData] = useState<ReporteI>();
+  const [loading, setLoading] = useState<Boolean>(false);
 
   useEffect(() => {
     if (open) getReporte()
