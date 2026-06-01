@@ -259,7 +259,7 @@ export function SolidoUrbano1() {
                   return (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel className="text-[13px] font-bold text-negrito">
-                        Tipo de Residuo *
+                        Nombre del Residuo *
                       </FieldLabel>
 
                       <Combobox
@@ -317,12 +317,11 @@ export function SolidoUrbano1() {
                       className="placeholder:text-placeholder"
                       value={field.value ?? ""}
                       onBlur={field.onBlur}
-                      onClick={()=> field.onChange("")}
                       name={field.name}
                       ref={field.ref}
                       onChange={(e) => {
                         const value = e.target.value
-                        field.onChange(value === "" ? undefined : Number(value))
+                        field.onChange(value === "" ? "" : Number(value))
                       }}
                     />
 

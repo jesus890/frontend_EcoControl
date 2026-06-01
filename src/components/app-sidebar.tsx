@@ -20,6 +20,8 @@ import {
   Cog,
 } from "lucide-react"
 
+import mml from "@/assets/mml.png";
+
 export function AppSidebar() {
   const items = [
     {
@@ -44,7 +46,7 @@ export function AppSidebar() {
     },
     {
       title: "Reportes",
-      url: "/",
+      url: "/mml/environment/reportes",
       icon: ChartArea,
     },
     {
@@ -62,10 +64,12 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b border-blanquito text-center">
-        <p className="mt-6 text-[18px] font-bold text-white"> EcoControl </p>
-        <p className="-mt-2.5 mb-2 text-[12px] font-thin text-blanquito">
-          v1.0 — Sistema de Residuos
-        </p>
+        <img
+          src={mml}
+          className="w-[90%] h-auto mx-auto"
+          alt="logo"
+        />
+        <p className="mb-1  mt-[-2.5] text-[18px] font-bold text-white"> EcoControl </p>
       </SidebarHeader>
 
       <SidebarContent>
@@ -86,12 +90,21 @@ export function AppSidebar() {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+
+
         </SidebarGroupContent>
 
         <SidebarGroup />
       </SidebarContent>
 
-      <SidebarFooter />
+      
+      <SidebarFooter>
+        {/* <img
+          src={smc}
+          className="w-full h-auto"
+          alt="logo"
+        /> */}
+      </SidebarFooter>
     </Sidebar>
   )
 }

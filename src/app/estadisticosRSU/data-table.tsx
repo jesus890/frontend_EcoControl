@@ -15,9 +15,9 @@ import {
   getPaginationRowModel, //paginacion
   getSortedRowModel, //ordenamiento
   getFilteredRowModel, //buscador
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"
 
 import {
   Table,
@@ -26,25 +26,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/table"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-
-  abrirVistaPrevia: (
-    row: TData
-  ) => void
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  abrirVistaPrevia,
 }: DataTableProps<TData, TValue>) {
-
+  
   const [sorting, setSorting] = useState<SortingState>([]) //ordenamiento
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]) //buscador
 
@@ -68,41 +63,26 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
 
     getFilteredRowModel: getFilteredRowModel(),
-
-    meta: {
-      abrirVistaPrevia,
-    },
   })
 
   return (
     <div className="overflow-hidden rounded-md border">
-
       <div className="flex items-center py-4">
         <Input
           placeholder="Filtrar..."
-          value={
-            (table
-              .getColumn("tipo_residuo")
-              ?.getFilterValue() as string) ?? ""
-          }
+          value={(table.getColumn("residuo")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table
-              .getColumn("tipo_residuo")
-              ?.setFilterValue(event.target.value)
+            table.getColumn("residuo")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm ml-4"
+          className="ml-4 max-w-sm"
         />
       </div>
 
       <Table>
-
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-
-            <TableRow key={headerGroup.id}>
-
+            <TableRow key={headerGroup.id} className="bg-white">
               {headerGroup.headers.map((header) => (
-
                 <TableHead key={header.id}>
                   {header.isPlaceholder
                     ? null
@@ -111,54 +91,30 @@ export function DataTable<TData, TValue>({
                         header.getContext()
                       )}
                 </TableHead>
-
               ))}
-
             </TableRow>
-
           ))}
         </TableHeader>
 
         <TableBody>
-
           {table.getRowModel().rows?.length ? (
-
             table.getRowModel().rows.map((row) => (
-
-              <TableRow key={row.id} className="bg-white">
-
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-
                   <TableCell key={cell.id}>
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext()
-                    )}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
-
                 ))}
-
               </TableRow>
-
             ))
-
           ) : (
-
             <TableRow>
-
-              <TableCell
-                colSpan={columns.length}
-                className="h-24 text-center"
-              >
+              <TableCell colSpan={columns.length} className="h-24 text-center">
                 No hay resultados.
               </TableCell>
-
             </TableRow>
-
           )}
-
         </TableBody>
-
       </Table>
 
       <div className="flex items-center justify-end space-x-2 p-4">
@@ -182,7 +138,6 @@ export function DataTable<TData, TValue>({
           Siguiente
         </Button>
       </div>
-
     </div>
   )
 }

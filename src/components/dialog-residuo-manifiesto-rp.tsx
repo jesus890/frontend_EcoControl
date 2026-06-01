@@ -8,8 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Field, FieldGroup } from "@/components/ui/field"
-import type { ReporteI, ResiduoPeligroPdfI } from "@/interfaces/interfaces"
-import { generarReporteResiduoPeligroso } from "../api/service"
+import type { ReporteI } from "@/interfaces/interfaces"
+import { generarReporteManifiestoRP } from "../api/service"
 import { ArrowBigDownDash } from "lucide-react"
 import { Loader } from "lucide-react"
 import { Printer } from 'lucide-react';
@@ -17,10 +17,9 @@ import { Printer } from 'lucide-react';
 interface PropI {
   open: boolean
   setOpen: (prev: boolean) => void
-  data: ResiduoPeligroPdfI
 }
 
-export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
+export function DialogResiduoPeligrosoManfiesto({ open, setOpen }: PropI) {
   const [reporteData, setReporteData] = useState<ReporteI>()
   const [loading, setLoading] = useState<Boolean>(false)
 
@@ -29,7 +28,7 @@ export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
   }, [open])
 
   const getReporte = async () => {
-    const result = await generarReporteResiduoPeligroso(data)
+    const result = await generarReporteManifiestoRP()
     setReporteData(result.data)
   }
 
@@ -128,7 +127,7 @@ export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
       <DialogContent className="flex max-h-[90vh] w-full max-w-2xl flex-col">
         <DialogHeader className="px-4 pt-4">
           <DialogTitle className="font-bold text-azulito">
-            Vista Previa — Etiqueta del Residuo
+            Vista Previa Manifiesto
           </DialogTitle>
         </DialogHeader>
 

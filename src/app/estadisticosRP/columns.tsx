@@ -1,31 +1,23 @@
-import type { ColumnDef } from "@tanstack/react-table"
-import type {
-  ListResiduoPeligroso
-} from "@/interfaces/interfaces";
+import type { ColumnDef } from "@tanstack/react-table";
+import type { ResiduoListadoEstadistica } from "@/interfaces/interfaces";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tag } from 'lucide-react';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 
-const statusConfig: any = {
-  RP: "bg-[#611232] text-white font-bold border-none shadow-md",
-  RSU: "bg-[#E57825] text-white font-bold border-none shadow-md",
-  RME: "bg-[#F6A003] text-white font-bold border-none shadow-md",
-}
 
-export const columns: ColumnDef<ListResiduoPeligroso>[] = [
-  //uuid
+export const columns: ColumnDef<ResiduoListadoEstadistica>[] = [
+  //uuid  
   {
     accessorKey: "uuid",
     header: "Código",
   },
+  
   //nombre residuo
   {
-    accessorFn: (row) => row.tipo_residuo?.descripcion,
-    id: "tipo_residuo",
+    accessorFn: (row) => row.residuo,
+    id: "residuo",
     //columna con ordenamiento
     header: ({ column }) => {
       return (
@@ -39,41 +31,33 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
       )
     },
   },
+
   //nombre generador
   {
-    accessorFn: (row) => row.tipo_generador?.descripcion,
-    id: "tipo_generador",
+    accessorFn: (row) => row.generador,
+    id: "generador",
     header: "Generador",
   },
+
   //area generacion
   {
-    accessorFn: (row) => row.area_generacion?.descripcion,
-    id: "area_generacion",
+    accessorFn: (row) => row.area,
+    id: "area",
     header: "Área",
   },
+
+
   //cantidad
   {
     accessorKey: "cantidad",
     header: "Cantidad",
   },
-  //tipo (RP, RSU o RME)
-  {
-    accessorKey: "tipo",
-    header: "Tipo",
-    cell: ({ row }) => {
-      const tipo = row.getValue("tipo") as string
+  
 
-      return (
-        <Badge variant="outline" className={statusConfig[tipo] || ""}>
-          {tipo}
-        </Badge>
-      )
-    },
-  },
   //fecha entrada
   {
     //define que valor usa la tabla internamente
-    accessorKey: "fecha_entrada",
+    accessorKey: "fecha_entrada", 
 
     //define que se muestra visualmente
     cell: ({ row }) => {
@@ -101,28 +85,37 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
       return fechaA - fechaB
     },
   },
-  //acciones
-  {
-    id: "acciones",
-    header: "Acciones",
 
-    cell: ({ row, table }) => {
-      const residuo = row.original
+  //fecha salida
+  {
+    //define que valor usa la tabla internamente
+    accessorKey: "fecha_salida", 
+
+    //define que se muestra visualmente
+    cell: ({ row }) => {
+      return row.original.ffecha_salida
+    },
+
+    header: ({ column }) => {
       return (
         <Button
-          variant="outline"
-          className="bg-white font-bold text-azulito cursor-pointer p-4 h-12"
-          size="sm"
-          onClick={() => {
-            table.options.meta?.abrirVistaPrevia(residuo)
-          }}
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          <div>
-            <Tag className="text-azulito mx-auto mt-1"/>
-            <span className="mt-1">Etiqueta</span>
-          </div>
+          Fecha Salida
+          <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
     },
+
+    //define como se ordena
+    sortingFn: (rowA, rowB, columnId) => {
+      const fechaA = new Date(rowA.getValue<string>(columnId)).getTime()
+
+      const fechaB = new Date(rowB.getValue<string>(columnId)).getTime()
+
+      return fechaA - fechaB
+    },
   },
+
 ]

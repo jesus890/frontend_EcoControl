@@ -271,7 +271,7 @@ export function SolidoUrbano2() {
                   return (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel className="text-[13px] font-bold text-negrito">
-                        Tipo de Residuo *
+                        Nombre de Residuo *
                       </FieldLabel>
 
                       <Combobox
@@ -328,13 +328,12 @@ export function SolidoUrbano2() {
                       placeholder="Ej. 25"
                       className="placeholder:text-placeholder"
                       value={field.value ?? ""}
-                      onClick={()=> field.onChange("")}
                       onBlur={field.onBlur}
                       name={field.name}
                       ref={field.ref}
                       onChange={(e) => {
                         const value = e.target.value
-                        field.onChange(value === "" ? undefined : Number(value))
+                        field.onChange(value === "" ? "" : Number(value))
                       }}
                     />
 
@@ -527,7 +526,7 @@ export function SolidoUrbano2() {
                     </FieldLabel>
 
                     <Popover>
-                      <PopoverTrigger disabled>
+                      <PopoverTrigger>
                         <div
                           className="h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 py-1 text-left text-base text-placeholder transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm"
                           aria-invalid={fieldState.invalid}

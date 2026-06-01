@@ -6,8 +6,8 @@ export interface CatalogoI {
 }
 
 export interface CatalogoSimple {
-    id: Number;
-    descripcion: String;
+    id: number;
+    descripcion: string;
 }
 
 export interface ReporteI {
@@ -28,25 +28,25 @@ export interface ManejoEspecialI {
 }
 
 export interface ResiduoSolido1PdfI {
-    nombreResiduo: String,
+    nombreResiduo: string,
     cantidad: Number,
-    descGenerador: String,
-    descArea: String,
-    fEntrada: String;
-    fSalida : String;
-    descDestinoFinal: String;
+    descGenerador: string,
+    descArea: string,
+    fEntrada: Date | null | string;
+    fSalida : Date | null | string;
+    descDestinoFinal: string;
 }
 
 export interface ResiduoSolido2PdfI {
-    nombreResiduo: String,
+    nombreResiduo: string,
     cantidad: Number,
-    descGenerador: String,
-    descArea: String,
-    fEntrada: String;
-    fSalida : String;
-    descTratamiento : String;
-    descTransportistas : String;
-    manifiesto: String;
+    descGenerador: string,
+    descArea: string,
+    fEntrada: Date | null | string;
+    fSalida : Date | null | string;
+    descTratamiento : string;
+    descTransportistas : string;
+    manifiesto: string;
 }
 
 export interface ResiduoSolidoSave1I {
@@ -75,26 +75,28 @@ export interface ResiduoSolidoSave2I {
 //Residuos Peligrosos 
 
 export interface ResiduoPeligroSaveI {
-    descResiduo: String,
-    descSubTipoResiduo: String|null,
-    cantidad: Number,
-    descEnvase: String,
-    descGenerador: String,
-    descArea: String,
-    descDestinoFinal: String|null,
-    descAutorizacion: String|null,
+    descMateria: string,
+    descResiduo: string,
+    descSubTipoResiduo: string|null,
+    cantidad: number,
+    descEnvase: string,
+    descGenerador: string,
+    descArea: string,
+    descDestinoFinal: string|null,
+    descAutorizacion: string|null,
     fEntrada: string;
 }
 
 
 export interface ResiduoPeligroPdfI {
+    descMateria: string,
     descResiduo: string,
     descSubTipoResiduo: string|null;
     descGenerador: string,
     descArea: string,
     cantidad: number,
-    fEntrada: string|null;
-    fSalida : string|null;
+    fEntrada: Date | null | string;
+    fSalida : Date | null | string;
     uuid: string|null;
     numManifiesto: string|null;
 }
@@ -108,7 +110,72 @@ export interface ListResiduoPeligroso {
     cantidad: number;
     tipo_generador: CatalogoSimple;
     area_generacion: CatalogoSimple;
+    numero_manifiesto: string;
+
+    destino_final: CatalogoSimple | null;
+    transportista: CatalogoSimple | null;
+    tipo_tratamiento: CatalogoSimple | null;
+
     tipo: string;
     ffecha_entrada: string;
+    ffecha_salida: string;
     fecha_entrada: Date;
+    fecha_salida: Date;
+}
+
+export interface ListResiduoPeligrosoManifiestos {
+  numero_manifiesto: string;
+  destino_final: string;
+  nombre_residuos: string;
+  fecha_salida: Date;
+  ffecha_salida: string;
+}
+
+
+//Listado de estadisticas graficas
+export interface ResiduoPeligrosoEstadistica {
+  id: number;
+  descripcion: string;
+  cantidad_total: number;
+  totalx_residuo: number;
+}
+
+//Listado datable de estadisticas 
+export interface ResiduoListadoEstadistica {
+  uuid: string;
+  residuo: string;
+  generador: string;
+  area: string;
+  fecha_entrada: string;
+  ffecha_entrada: string;
+  fecha_salida: string;
+  ffecha_salida: string;
+  cantidad: number;
+}
+
+//estadisticas generales basicas
+export interface ResiduoEspecialNumEstadistica {
+  total_acumulado: number;
+  registros : number;
+  tipox_residuo: number;
+}
+
+//Filtro para el buscador
+export interface ResiduoFiltroEstadistica {
+  tipoFecha: string  | null;  
+
+  fRangos: {
+    from: string
+    to: string
+  } | null,
+
+  tipo_residuo: number[];
+  tipo_generador: number[];
+  area_generacion: number[];
+}
+
+export interface cantidadResiduosPendientes {
+  totalResiduos: number;
+  totalPendiente: number;
+  totalAntiguos: number;
 }

@@ -80,6 +80,7 @@ export function Trazabilidad() {
       } else result.result && result.data
       {
         const dataToGeneratePDF: ResiduoPeligroPdfI = {
+          descMateria: "",
           descResiduo: result.data.descResiduo,
           descSubTipoResiduo: result.data.descSubTipoResiduo,
           descGenerador: result.data.descGenerador,

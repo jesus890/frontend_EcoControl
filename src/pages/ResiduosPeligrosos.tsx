@@ -3,12 +3,7 @@ import { useState, useEffect } from "react"
 import { CirclePlus } from "lucide-react"
 
 //card
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 //field
 import {
@@ -55,25 +50,26 @@ import { NavBarCustom } from "@/components/navbar-custom"
 import type { CatalogoI, ResiduoPeligroPdfI } from "@/interfaces/interfaces"
 
 import {
+  listadoAgregacionMateria,
+  listadoTipoResiduoxMateriaRP,
   listadoAreaGeneracionRP,
   listadoTipoEnvasesRP,
   listadoTipoGeneradorRP,
   listadoAutorizacionRP,
   listadoDestinoFinalRP,
   crearReporteResiduosPeligroso,
-  listadoTipoResiduoRP,
   listadoSubTipoResiduoRP,
 } from "../api/service"
 
 import { DialogResiduoPeligroso } from "@/components/dialog-residuo-peligroso"
 
-import { toast } from "sonner";
-import { MessageCircleCheck } from "lucide-react";
-import { MessageCircleWarning } from "lucide-react";
+import { toast } from "sonner"
+import { MessageCircleCheck } from "lucide-react"
+import { MessageCircleWarning } from "lucide-react"
 
 export function ResiduosPeligrosos() {
-
   const [open, setOpen] = useState<boolean>(false)
+  const [materias, setMateria] = useState<CatalogoI[]>([])
   const [tipoResiduo, setTipoResiduo] = useState<CatalogoI[]>([])
   const [subTipoResiduo, setSubTipoResiduo] = useState<CatalogoI[]>([])
   const [envases, setEnvases] = useState<CatalogoI[]>([])
@@ -85,11 +81,13 @@ export function ResiduosPeligrosos() {
   const [uuid, setUuid] = useState("")
 
   const today = new Date()
+
   const todayString = `${today.getFullYear()}-${String(
     today.getMonth() + 1
   ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
 
   const [dataPdf, setdataPdf] = useState<ResiduoPeligroPdfI>({
+    descMateria: "",
     descResiduo: "",
     descSubTipoResiduo: "",
     descGenerador: "",
@@ -98,11 +96,14 @@ export function ResiduosPeligrosos() {
     fEntrada: todayString,
     fSalida: null,
     uuid: null,
-    numManifiesto: ""
+    numManifiesto: "",
   })
 
   //schema
   const schema = z.object({
+    tipoMateria: z.string().refine((val) => val !== null && val !== "", {
+      message: "Selecciona un tipo de estado de la matería",
+    }),
 
     tipoResiduo: z.string().refine((val) => val !== null && val !== "", {
       message: "Selecciona un tipo de residuo",
@@ -128,7 +129,10 @@ export function ResiduosPeligrosos() {
 
     tipoAutorizacion: z.string().nullable(),
 
-    tipoDestinoFinal: z.string().nullable(),
+   
+    tipoDestinoFinal: z.string().refine((val) => val !== null && val !== "", {
+      message: "Selecciona un destino final",
+    }),
 
     fEntrada: z.string().min(1, "Fecha requerida"),
   })
@@ -140,13 +144,14 @@ export function ResiduosPeligrosos() {
     resolver: zodResolver(schema),
     defaultValues: {
       cantidad: 0,
-      tipoResiduo: "",
+      tipoMateria: "", //obligatorio
+      tipoResiduo: "", //obligatorio
       subTipoResiduo: null,
-      tipoEnvase: "",
-      tipoGenerador: "",
-      tipoArea: "",
+      tipoEnvase: "", //obligatorio
+      tipoGenerador: "", //obligatorio
+      tipoArea: "", //obligatorio
       tipoAutorizacion: null,
-      tipoDestinoFinal: null,
+      tipoDestinoFinal: "", //obligatorio
       fEntrada: todayString,
     },
     mode: "onBlur",
@@ -161,47 +166,59 @@ export function ResiduosPeligrosos() {
 
   //carga los diferentes catalogos que no dependen de otro
   const cargarCatalogos = async () => {
-    const [residuos, envases, generadores, destinoFinal] = await Promise.all([
-      listadoTipoResiduoRP(),
+    const [materia, envases, generadores, destinoFinal] = await Promise.all([
+      listadoAgregacionMateria(),
       listadoTipoEnvasesRP(),
       listadoTipoGeneradorRP(),
       listadoDestinoFinalRP(),
     ])
 
-    setTipoResiduo(residuos.data)
+    setMateria(materia.data)
     setEnvases(envases.data)
     setGeneradores(generadores.data)
     setDestinoFinal(destinoFinal.data)
   }
 
+  //al seleccionar un tipo de materia, actualiza el listado de residuos acorde al primer filtro
+  const materiaOnChange = async (value: string | null) => {
+    if (value !== null) {
+      form.setValue("tipoResiduo", "")
+      form.setValue("subTipoResiduo", null)
+
+      const selectedTipo = materias.find((item) => item.descripcion === value)
+      if (selectedTipo) {
+        const result = await listadoTipoResiduoxMateriaRP(selectedTipo.id);
+        setTipoResiduo(result.data);
+      }
+    }
+  }
+
   //al seleccionar un residuo, actualiza el listado de subtipo residuo acorde al primer filtro
   const residuoOnChange = async (value: string | null) => {
     if (value !== null) {
+      form.setValue("subTipoResiduo", null)
+
       const selectedTipo = tipoResiduo.find(
         (item) => item.descripcion === value
       )
       if (selectedTipo) {
-        console.log({ selectedTipo })
-        const result = await listadoSubTipoResiduoRP(selectedTipo.id)
-        setSubTipoResiduo(result.data)
+        const result = await listadoSubTipoResiduoRP(selectedTipo.id);
+        setSubTipoResiduo(result.data);
       }
-    } else {
-      setSubTipoResiduo([])
     }
   }
 
   //al seleccionar un valor de generador , actualiza el listado de areas acorde al primer filtro
   const generadorOnChange = async (value: string | null) => {
     if (value !== null) {
+      form.setValue("tipoArea", "")
       const selectedTipo = generadores.find(
         (item) => item.descripcion === value
       )
       if (selectedTipo) {
-        const result = await listadoAreaGeneracionRP(selectedTipo.id)
-        setAreas(result.data)
+        const result = await listadoAreaGeneracionRP(selectedTipo.id);
+        setAreas(result.data);
       }
-    } else {
-      setAreas([])
     }
   }
 
@@ -221,9 +238,9 @@ export function ResiduosPeligrosos() {
   }
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    try
-    {
+    try {
       const dataToSave = {
+        descMateria: data.tipoMateria,
         descResiduo: data.tipoResiduo,
         descSubTipoResiduo: data.subTipoResiduo,
         cantidad: data.cantidad,
@@ -236,8 +253,7 @@ export function ResiduosPeligrosos() {
       }
 
       const result = await crearReporteResiduosPeligroso(dataToSave)
-      if (result)
-      {
+      if (result) {
         toast(
           "El registro ha sido creado!", //sucess
           {
@@ -248,9 +264,9 @@ export function ResiduosPeligrosos() {
 
         setUuid(result.data.uuid)
       }
-    }
-    catch(ex) //error
-    {
+    } catch (
+      ex //error
+    ) {
       toast(
         "Ocurrio un error, vaya esto es incomodo", //error
         {
@@ -263,19 +279,21 @@ export function ResiduosPeligrosos() {
 
   const previsualizarPDF = () => {
     const dataToGeneratePDF = {
+      descMateria: String(values.tipoMateria),
       descResiduo: String(values.tipoResiduo),
-      descSubTipoResiduo: String(values.subTipoResiduo),
+      descSubTipoResiduo:
+        values.subTipoResiduo !== null ? String(values.subTipoResiduo) : "",
       descGenerador: String(values.tipoGenerador),
       descArea: String(values.tipoArea),
       cantidad: values.cantidad,
-      fEntrada: values.fEntrada,
+      fEntrada: new Date(values.fEntrada),
       fSalida: null,
       uuid: uuid ? uuid : null,
-      numManifiesto: null
+      numManifiesto: null,
     }
 
-    setdataPdf(dataToGeneratePDF);
-    setOpen(true);
+    setdataPdf(dataToGeneratePDF)
+    setOpen(true)
   }
 
   return (
@@ -296,6 +314,53 @@ export function ResiduosPeligrosos() {
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
                 
+                {/* TipoMateria */}
+                <Controller
+                  name="tipoMateria"
+                  control={form.control}
+                  render={({ field, fieldState }) => {
+                    return (
+                      <Field data-invalid={fieldState.invalid}>
+                        <FieldLabel className="text-[13px] font-bold text-negrito">
+                          Estado de la Matería *
+                        </FieldLabel>
+
+                        <Combobox
+                          items={materias}
+                          value={field.value ?? ""}
+                          onValueChange={(value) => (
+                            field.onChange(value),
+                            materiaOnChange(value)
+                          )}
+                        >
+                          <ComboboxInput placeholder="Selecciona un tipo de matería..." />
+
+                          <ComboboxContent>
+                            <ComboboxEmpty>
+                              No se encontraron resultados.
+                            </ComboboxEmpty>
+
+                            <ComboboxList>
+                              {(item) => (
+                                <ComboboxItem
+                                  key={item.id}
+                                  value={String(item.descripcion)}
+                                >
+                                  {item.descripcion}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+
+                        {fieldState.error && (
+                          <FieldError>{fieldState.error.message}</FieldError>
+                        )}
+                      </Field>
+                    )
+                  }}
+                />
+
                 {/* TipoResiduo */}
                 <Controller
                   name="tipoResiduo"
@@ -304,7 +369,7 @@ export function ResiduosPeligrosos() {
                     return (
                       <Field data-invalid={fieldState.invalid}>
                         <FieldLabel className="text-[13px] font-bold text-negrito">
-                          Tipo de Residuo *
+                          Nombre del Residuo *
                         </FieldLabel>
 
                         <Combobox
@@ -407,14 +472,11 @@ export function ResiduosPeligrosos() {
                         className="placeholder:text-placeholder"
                         value={field.value ?? ""}
                         onBlur={field.onBlur}
-                        onClick={()=> field.onChange("")}
                         name={field.name}
                         ref={field.ref}
                         onChange={(e) => {
                           const value = e.target.value
-                          field.onChange(
-                            value === "" ? undefined : Number(value)
-                          )
+                          field.onChange(value === "" ? "" : Number(value))
                         }}
                       />
 
@@ -574,7 +636,7 @@ export function ResiduosPeligrosos() {
                     return (
                       <Field data-invalid={fieldState.invalid}>
                         <FieldLabel className="text-[13px] font-bold text-negrito">
-                          Destino Final
+                          Destino Final *
                         </FieldLabel>
 
                         <Combobox
@@ -731,7 +793,7 @@ export function ResiduosPeligrosos() {
                     </Field>
                   )}
                 />
-                
+
                 <DialogResiduoPeligroso
                   open={open}
                   setOpen={setOpen}
