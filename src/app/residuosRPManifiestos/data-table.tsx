@@ -82,12 +82,12 @@ export function DataTable<TData, TValue>({
           placeholder="Filtrar..."
           value={
             (table
-              .getColumn("tipo_residuo")
+              .getColumn("nombre_residuos")
               ?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
             table
-              .getColumn("tipo_residuo")
+              .getColumn("nombre_residuos")
               ?.setFilterValue(event.target.value)
           }
           className="max-w-sm ml-4"

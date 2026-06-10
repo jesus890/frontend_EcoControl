@@ -4,7 +4,7 @@ import type {
 } from "@/interfaces/interfaces";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tag } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -70,8 +70,10 @@ export const columns: ColumnDef<ListResiduoPeligrosoManifiestos>[] = [
 
     cell: ({ row, table }) => {
       const residuo = row.original
+      
       return (
         <Button
+          disabled={residuo.destino_final=="BRAVO ENERGY"}
           variant="outline"
           className="bg-white font-bold text-azulito cursor-pointer p-4 h-12"
           size="sm"
@@ -80,8 +82,8 @@ export const columns: ColumnDef<ListResiduoPeligrosoManifiestos>[] = [
           }}
         >
           <div>
-            <Tag className="text-azulito mx-auto mt-1"/>
-            <span className="mt-1">Etiqueta</span>
+            <FileText className="text-azulito mx-auto mt-1"/>
+            <span className="mt-1">Generar</span>
           </div>
         </Button>
       )

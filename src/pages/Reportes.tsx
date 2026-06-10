@@ -9,15 +9,14 @@ import Reporte4 from "./Reporte4"
 import { Skull } from "lucide-react"
 import { Package } from "lucide-react"
 import { ScrollText } from "lucide-react"
-import { ClipboardList } from "lucide-react"
 
 export function Reportes() {
   return (
     <>
       <NavBarCustom />
-      <div className="p-5">
+      <div className="p-5 overflow-x-auto">
         <Tabs defaultValue="reporte1" className="h-[76vh] w-full">
-          <TabsList>
+          <TabsList className="w-max min-w-full flex-nowrap">
             <TabsTrigger value="reporte1" className="w-full p-3">
               <Skull />
               <span> Reporte Residuos Peligrosos </span>
@@ -35,13 +34,9 @@ export function Reportes() {
 
             <TabsTrigger value="reporte4" className="w-full p-3">
               <ScrollText />
-              <span> Registro de Manifiestos </span>
-            </TabsTrigger>
-
-            <TabsTrigger value="reporte5" className="w-full p-3">
-              <ClipboardList />
               <span> Manifiestos </span>
             </TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="reporte1">

@@ -123,13 +123,12 @@ export interface ListResiduoPeligroso {
     fecha_salida: Date;
 }
 
-export interface ListResiduoPeligrosoManifiestos {
-  numero_manifiesto: string;
-  destino_final: string;
-  nombre_residuos: string;
-  fecha_salida: Date;
-  ffecha_salida: string;
-}
+
+
+
+
+
+
 
 
 //Listado de estadisticas graficas
@@ -178,4 +177,27 @@ export interface cantidadResiduosPendientes {
   totalResiduos: number;
   totalPendiente: number;
   totalAntiguos: number;
+}
+
+
+
+
+//Listado de manifiestos
+export interface ListResiduoPeligrosoManifiestos {
+  numero_manifiesto: string;
+  destino_final: string;
+  nombre_residuos: string;
+  fecha_salida: Date;
+  ffecha_salida: string;
+}
+
+
+export interface ManifiestoPeligrosoPDF {
+  
+  destino_final: string;
+  numero_manifiesto: string;
+  transportista: number;
+  num_placa: string;
+  responsable_contenido: string;
+  responsable_recepcion: string;
 }

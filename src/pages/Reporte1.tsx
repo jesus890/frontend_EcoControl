@@ -392,7 +392,6 @@ export function Reporte1() {
   const cargarListado = async () => {
     const result = await creaReporteListadoPeligroso(filtros)
     if (result) {
-      console.log(result.data)
       setData(result.data)
     }
   }
@@ -401,7 +400,6 @@ export function Reporte1() {
     setAreas([])
     const result = await listadoAreaGeneracionMultiple(ids)
     if (result) {
-      console.log(result.data)
       setAreas(result.data)
     }
   }

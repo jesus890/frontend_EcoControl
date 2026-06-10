@@ -4,19 +4,22 @@ import type { ListResiduoPeligrosoManifiestos } from "@/interfaces/interfaces"
 import { DataTable } from "./data-table"
 import { listadoResiduosPeligrososManifiesto } from "@/api/service"
 
-import { DialogResiduoPeligrosoManfiesto } from "@/components/dialog-residuo-manifiesto-rp"
-// import { DialogResiduoPeligroso } from "@/components/dialog-residuo-peligroso"
-// import { DialogSolidoUrbano1 } from "@/components/dialog-solido-urbano-1";
-// import { DialogSolidoUrbano2 } from "@/components/dialog-solido-urbano-2";
+import { DialogSeleccionarManifiesto } from "@/components/dialog-seleccionar-manifiesto"
 
 export default function ListadoRPManifiestos() {
 
-  const [data, setData] = useState<ListResiduoPeligrosoManifiestos[]>([])
+  const [data, setData] = useState<ListResiduoPeligrosoManifiestos[]>([]);
+  const [dataSelected, setDataSelected]  = useState<ListResiduoPeligrosoManifiestos>({
+    numero_manifiesto: "",
+    destino_final: "",
+    nombre_residuos: "",
+    fecha_salida: new Date(),
+    ffecha_salida: ""
+  });
 
   //dialog
-  const [openRP, setOpenRP] = useState(false);
-
-
+  const [openDialog, setOpenDialog] = useState(false);
+  
   useEffect(() => {
     cargarListado()
   }, [])
@@ -24,14 +27,13 @@ export default function ListadoRPManifiestos() {
   const cargarListado = async () => {
     const result = await listadoResiduosPeligrososManifiesto()
     if (result) 
-    {
       setData(result.data)
-    }
   }
 
   const previsualizarPDF = (data: ListResiduoPeligrosoManifiestos) => {
     console.log({data});
-    setOpenRP(true);
+    setOpenDialog(true);
+    setDataSelected(data);
   }
 
   return (
@@ -42,10 +44,18 @@ export default function ListadoRPManifiestos() {
         abrirVistaPrevia={previsualizarPDF}
       />
 
-      <DialogResiduoPeligrosoManfiesto 
+      {/* <DialogResiduoPeligrosoManfiesto
+        data={dataSelected}
         open={openRP}
         setOpen={setOpenRP}
+      /> */}
+
+      <DialogSeleccionarManifiesto
+        data={dataSelected}
+        open={openDialog}
+        setOpen={setOpenDialog}
       />
+
     </div>
   )
 }

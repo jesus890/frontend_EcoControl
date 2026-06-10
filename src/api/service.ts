@@ -8,6 +8,7 @@ import type {
   ResiduoSolidoSave1I,
   ResiduoSolidoSave2I,
   ResiduoFiltroEstadistica,
+  ManifiestoPeligrosoPDF
 } from "@/interfaces/interfaces"
 
 /* 
@@ -137,8 +138,10 @@ export const generarReporteResiduoPeligroso = (values: ResiduoPeligroPdfI) =>
   apiRequest<any>(axiosAuth.post("/generarReporteResiduosPeligroso", values))
 
 //PDF
-export const generarReporteManifiestoRP = () =>
-  apiRequest<any>(axiosAuth.post("/generarReporteManifiestoRP", {}))
+export const generarReporteManifiestoRP = (values: ManifiestoPeligrosoPDF) =>
+  apiRequest<any>(axiosAuth.post("/generarReporteManifiestoRP", values))
+
+  
 
 
 //Guarda

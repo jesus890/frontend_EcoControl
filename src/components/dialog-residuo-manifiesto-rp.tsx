@@ -7,36 +7,39 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Field, FieldGroup } from "@/components/ui/field"
-import type { ReporteI } from "@/interfaces/interfaces"
+import type { ReporteI, ManifiestoPeligrosoPDF } from "@/interfaces/interfaces"
 import { generarReporteManifiestoRP } from "../api/service"
 import { ArrowBigDownDash } from "lucide-react"
 import { Loader } from "lucide-react"
 import { Printer } from 'lucide-react';
 
 interface PropI {
+  data: ManifiestoPeligrosoPDF
   open: boolean
   setOpen: (prev: boolean) => void
 }
 
-export function DialogResiduoPeligrosoManfiesto({ open, setOpen }: PropI) {
-  const [reporteData, setReporteData] = useState<ReporteI>()
-  const [loading, setLoading] = useState<Boolean>(false)
+export function DialogResiduoPeligrosoManfiesto({ data, open, setOpen }: PropI) {
+
+  const [reporteData, setReporteData] = useState<ReporteI>();
+  const [loading, setLoading] = useState<Boolean>(false);
 
   useEffect(() => {
     if (open) getReporte()
   }, [open])
 
   const getReporte = async () => {
-    const result = await generarReporteManifiestoRP()
-    setReporteData(result.data)
+    const result = await generarReporteManifiestoRP(data);
+    console.log({data})
+    setReporteData(result.data);
   }
+
 
   const descargarFicha = async () => {
     try {
-      setLoading(true)
-      await sleep(4000) // 4 segundos
-      downloadBase64Pdf(reporteData?.pdf_blob)
+      setLoading(true);
+      await sleep(4000); // 4 segundos
+      downloadBase64Pdf(reporteData?.pdf_blob);
     } catch (ex) {
       console.log({ ex })
     } finally {
@@ -124,24 +127,20 @@ export function DialogResiduoPeligrosoManfiesto({ open, setOpen }: PropI) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="flex max-h-[90vh] w-full max-w-2xl flex-col">
+      <DialogContent className="flex h-[90vh] w-full max-w-2xl flex-col">
         <DialogHeader className="px-4 pt-4">
           <DialogTitle className="font-bold text-azulito">
             Vista Previa Manifiesto
           </DialogTitle>
         </DialogHeader>
 
-        {/* CONTENIDO SCROLLEABLE */}
-        <div className="flex-1 overflow-y-auto px-4">
-          <FieldGroup>
-            <Field>
-              <img
-                className="w-full object-contain"
-                src={reporteData?.photo_blob}
-              />
-            </Field>
-          </FieldGroup>
-        </div>
+        {/* CONTENIDO */}
+        
+          <iframe
+            className="w-full h-full"
+            src={reporteData?.pdf_blob}
+          />
+           
 
         {/* FOOTER FIJO */}
         <DialogFooter className="border-t p-4">
