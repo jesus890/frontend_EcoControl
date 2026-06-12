@@ -75,11 +75,12 @@ import type {
 } from "@/interfaces/interfaces"
 
 import {
-  listadoTipoResiduoRP,
+  listadoAgregacionMateria,
   listadoTipoGeneradorRP,
   crearEstadisticoPeligroso,
   creaReporteListadoPeligroso,
   listadoAreaGeneracionMultiple,
+  listadoAgregacionMateriaMultiple
 } from "@/api/service"
 
 //graficas
@@ -98,14 +99,16 @@ import * as XLSX from "xlsx"
 import ListadoResiduoPeligroso from "@/app/estadisticosRP/page"
 
 export function Reporte1() {
+
   //catalogos
-  const [residuos, setResiduos] = useState<CatalogoI[]>([])
-  const [generadores, setGeneradores] = useState<CatalogoI[]>([])
-  const [areas, setAreas] = useState<CatalogoI[]>([])
+  const [residuos, setResiduos] = useState<CatalogoI[]>([]);
+  const [generadores, setGeneradores] = useState<CatalogoI[]>([]);
+  const [areas, setAreas] = useState<CatalogoI[]>([]);
+  const [materias, setMateria] = useState<CatalogoI[]>([])
 
   //estadisticas
-  const [cantidades, setCantidades] = useState<string[]>([])
-  const [descripciones, setDescripciones] = useState<string[]>([])
+  const [cantidades, setCantidades] = useState<string[]>([]);
+  const [descripciones, setDescripciones] = useState<string[]>([]);
 
   const [estadisticas, setEstadisticas] =
     useState<ResiduoEspecialNumEstadistica>({
@@ -120,6 +123,7 @@ export function Reporte1() {
     tipo_residuo: [],
     tipo_generador: [],
     area_generacion: [],
+    agregacion_materia: []
   })
 
   //tipo de fecha
@@ -133,6 +137,9 @@ export function Reporte1() {
 
   //schema
   const schema = z.object({
+
+    tipoMateria: z.array(z.number()),
+
     tipoFecha: z.string().refine((val) => val !== null && val !== "", {
       message: "Selecciona un tipo de fecha",
     }),
@@ -183,13 +190,14 @@ export function Reporte1() {
 
   //carga los diferentes catalogos que no dependen de otro
   const cargarCatalogos = async () => {
-    const [resultado, resultado2] = await Promise.all([
-      listadoTipoResiduoRP(),
+
+    const [resultado2, resultado3] = await Promise.all([
       listadoTipoGeneradorRP(),
+      listadoAgregacionMateria()
     ])
-    if (resultado.data) {
-      setResiduos(resultado.data)
+    if (resultado2.data) {
       setGeneradores(resultado2.data)
+      setMateria(resultado3.data)
     }
 
     setTipoFecha([
@@ -221,6 +229,7 @@ export function Reporte1() {
       tipo_residuo: values.tipoResiduo,
       tipo_generador: values.tipoGenerador,
       area_generacion: values.tipoArea,
+      agregacion_materia: values.tipoMateria
     }
 
     //guarda los filtros en un state
@@ -396,6 +405,15 @@ export function Reporte1() {
     }
   }
 
+  const cargarCatalogoNombreResiduo = async (ids: number[]) => {
+    setResiduos([])
+    const result = await listadoAgregacionMateriaMultiple(ids)
+    console.log({result})
+    if (result) {
+      setResiduos(result.data)
+    }
+  }
+
   const cargarCatalogoArea = async (ids: number[]) => {
     setAreas([])
     const result = await listadoAreaGeneracionMultiple(ids)
@@ -408,6 +426,11 @@ export function Reporte1() {
     cargarCatalogoArea(values.tipoGenerador)
   }, [values.tipoGenerador])
 
+   useEffect(() => {
+    cargarCatalogoNombreResiduo(values.tipoMateria)
+  }, [values.tipoMateria])
+
+
   return (
     <div className="p-5">
       {/* Buscador */}
@@ -415,6 +438,7 @@ export function Reporte1() {
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
+              
               {/* TipoFecha */}
               <Controller
                 name="tipoFecha"
@@ -561,7 +585,134 @@ export function Reporte1() {
                 )}
               />
 
-              {/* Tipo de Residuo */}
+              {/* Tipo de Materia */}
+              <Controller
+                name="tipoMateria"
+                control={form.control}
+                defaultValue={[]}
+                render={({ field, fieldState }) => {
+                  const selectedValues: number[] = field.value || []
+
+                  const toggleItem = (id: number) => {
+                    if (selectedValues.includes(id)) {
+                      field.onChange(
+                        selectedValues.filter((item: number) => item !== id)
+                      )
+                    } else {
+                      field.onChange([...selectedValues, id])
+                    }
+                  }
+
+                  return (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel className="text-[13px] font-bold text-negrito">
+                        Tipo Residuo
+                      </FieldLabel>
+
+                      <Popover>
+                        <PopoverTrigger>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="min-h-[32px] w-full justify-between bg-white"
+                          >
+                            <div className="flex h-full flex-wrap gap-1 overflow-auto">
+                              {selectedValues.length > 0 ? (
+                                selectedValues.map((id: number) => {
+                                  const materia = materias?.find(
+                                    (item) => Number(item.id) === id
+                                  )
+
+                                  return (
+                                    <Badge key={id} variant="ghost">
+                                      {materia?.descripcion}
+                                    </Badge>
+                                  )
+                                })
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  Selecciona uno o mas tipo de residuo...
+                                </span>
+                              )}
+                            </div>
+
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Buscar residuo..." />
+
+                            <CommandList>
+                              <CommandEmpty>
+                                No se encontraron resultados.
+                              </CommandEmpty>
+
+                              <CommandGroup>
+                                {/* Seleccionar todo */}
+                                <CommandItem
+                                  onSelect={() => {
+                                    const todos =
+                                      residuos?.map((item) =>
+                                        Number(item.id)
+                                      ) || []
+
+                                    const todosSeleccionados =
+                                      selectedValues.length === todos.length
+
+                                    field.onChange(
+                                      todosSeleccionados ? [] : todos
+                                    )
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedValues.length === residuos?.length
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  SELECCIONAR TODO
+                                </CommandItem>
+
+                                {/* Lista */}
+                                {materias?.map((item) => (
+                                  <CommandItem
+                                    key={Number(item.id)}
+                                    value={String(item.descripcion)}
+                                    onSelect={() => toggleItem(Number(item.id))}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        selectedValues.includes(Number(item.id))
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+
+                                    {item.descripcion}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+
+                      {fieldState.error && (
+                        <FieldError className="text-rojito">
+                          {fieldState.error.message}
+                        </FieldError>
+                      )}
+                    </Field>
+                  )
+                }}
+              />
+
+              {/* Nombre de Residuo */}
               <Controller
                 name="tipoResiduo"
                 control={form.control}

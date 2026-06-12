@@ -9,9 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 
-import type {
-  ListResiduoPeligrosoManifiestos,
-} from "@/interfaces/interfaces"
+import type { ListResiduoPeligrosoManifiestos } from "@/interfaces/interfaces"
 
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -38,24 +36,22 @@ interface PropI {
 }
 
 export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
-  
-  const [transportista, setTransportista] = useState(data.destino_final === "TAESA" ? 4 : 6);
-  const [openDialog, setDialog] = useState(false);
+
+  const [transportista, setTransportista] = useState(
+    data.destino_final === "TAESA" ? 4 : 6
+  )
+  const [openDialog, setDialog] = useState(false)
   const [dataManifiesto, setdataManifiesto] = useState({
     destino_final: "",
     numero_manifiesto: "",
     transportista: data.destino_final === "TAESA" ? 4 : 6,
     num_placa: "",
-    responsable_contenido: "",
-    responsable_recepcion: ""
-  });
+    responsable_recepcion: "",
+  })
 
   //schema
   const schema = z.object({
-    responsable1: z.string().refine((val) => val !== null && val !== "", {
-      message: "Seleccione un responsable",
-    }),
-
+    
     responsable2: z.string().refine((val) => val !== null && val !== "", {
       message: "Seleccione un responsable",
     }),
@@ -71,7 +67,6 @@ export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      responsable1: "", //obligatorio
       responsable2: "", //obligatorio
       num_placa: "",
     },
@@ -85,191 +80,154 @@ export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
         numero_manifiesto: data.numero_manifiesto,
         transportista: data.destino_final == "BIOS TERRA" ? 6 : transportista,
         num_placa: preData.num_placa,
-        responsable_contenido: preData.responsable1,
-        responsable_recepcion: preData.responsable2,
+        responsable_recepcion: preData.responsable2
       }
 
-      console.log({dataToSave});
-      console.log({transportista});
+      console.log({ dataToSave })
+      console.log({ transportista })
 
-      setdataManifiesto(dataToSave);
-      setDialog(true);
-      
+      setdataManifiesto(dataToSave)
+      setDialog(true)
     } catch (ex) {}
   }
 
   return (
     <div>
-        <DialogResiduoPeligrosoManfiesto
-            data={dataManifiesto}
-            open={openDialog}
-            setOpen={setDialog}
-        />
-        <Dialog open={open} onOpenChange={setOpen}>
+      <DialogResiduoPeligrosoManfiesto
+        data={dataManifiesto}
+        open={openDialog}
+        setOpen={setDialog}
+      />
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="flex max-h-[90vh] w-full max-w-2xl flex-col">
-            <DialogHeader className="px-4 pt-4">
+          <DialogHeader className="px-4 pt-4">
             <DialogTitle className="font-bold text-azulito">
-                Complemente los datos para el manifiesto
+              Complemente los datos para el manifiesto
             </DialogTitle>
-            </DialogHeader>
+          </DialogHeader>
 
-            {/* CONTENIDO SCROLLEABLE */}
-            {data.destino_final == "TAESA" && (
+          {/* CONTENIDO SCROLLEABLE */}
+          {data.destino_final == "TAESA" && (
             <div className="flex-1 overflow-y-auto px-4">
-                <RadioGroup
+              <RadioGroup
                 defaultValue="4"
                 className="w-fit"
                 onValueChange={(value) => setTransportista(value)}
-                >
+              >
                 <div className="flex items-center gap-3">
-                    <Label className="text-bold">Seleccione un transportista</Label>
+                  <Label className="text-bold">
+                    Seleccione un transportista
+                  </Label>
                 </div>
                 <div className="flex items-center gap-3">
-                    <RadioGroupItem value="4" id="4" />
-                    <Label htmlFor="r1">
+                  <RadioGroupItem value="4" id="4" />
+                  <Label htmlFor="r1">
                     Transportes San Isidro del Norte, S.A de C.V.
-                    </Label>
+                  </Label>
                 </div>
                 <div className="flex items-center gap-3">
-                    <RadioGroupItem value="5" id="5" />
-                    <Label htmlFor="r2">Transportes Osoyer S.A. de C.V.</Label>
+                  <RadioGroupItem value="5" id="5" />
+                  <Label htmlFor="r2">Transportes Osoyer S.A. de C.V.</Label>
                 </div>
-                </RadioGroup>
+              </RadioGroup>
             </div>
-            )}
+          )}
 
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-1">
-                {/* Responsable Contenido */}
-                <Controller
-                name="responsable1"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel
-                        htmlFor="cantidad"
-                        className="text-[13px] font-bold text-negrito"
-                    >
-                        Responsable del contenido y manejo del lote transportado.
-                    </FieldLabel>
-
-                    <Input
-                        id="cantidad"
-                        type="text"
-                        placeholder="Responsable del contenido ..."
-                        className="placeholder:text-placeholder"
-                        value={field.value ?? ""}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
-                        const value = e.target.value
-                        field.onChange(value)
-                        }}
-                    />
-
-                    {fieldState.error && (
-                        <FieldError className="text-rojito">
-                        {fieldState.error.message}
-                        </FieldError>
-                    )}
-                    </Field>
-                )}
-                />
-
-                {/* Responsable Recepcion */}
-                <Controller
+              {/* Responsable Recepcion */}
+              <Controller
                 name="responsable2"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
+                  <Field data-invalid={fieldState.invalid}>
                     <FieldLabel
-                        htmlFor="responsable2"
-                        className="text-[13px] font-bold text-negrito"
+                      htmlFor="responsable2"
+                      className="text-[13px] font-bold text-negrito"
                     >
-                        Responsable de la recepción y transporte de los residuos.
+                      Responsable de la recepción y transporte de los residuos.
                     </FieldLabel>
 
                     <Input
-                        id="responsable2"
-                        type="text"
-                        placeholder="Escriba el responsable de recepción ..."
-                        className="placeholder:text-placeholder"
-                        value={field.value ?? ""}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
+                      id="responsable2"
+                      type="text"
+                      placeholder="Escriba el responsable de recepción ..."
+                      className="placeholder:text-placeholder"
+                      value={field.value ?? ""}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                      onChange={(e) => {
                         const value = e.target.value
                         field.onChange(value)
-                        }}
+                      }}
                     />
 
                     {fieldState.error && (
-                        <FieldError className="text-rojito">
+                      <FieldError className="text-rojito">
                         {fieldState.error.message}
-                        </FieldError>
+                      </FieldError>
                     )}
-                    </Field>
+                  </Field>
                 )}
-                />
+              />
 
-                {/* Numero de placa */}
-                <Controller
+              {/* Numero de placa */}
+              <Controller
                 name="num_placa"
                 control={form.control}
                 render={({ field, fieldState }) => (
-                    <Field data-invalid={fieldState.invalid}>
+                  <Field data-invalid={fieldState.invalid}>
                     <FieldLabel
-                        htmlFor="placa"
-                        className="text-[13px] font-bold text-negrito"
+                      htmlFor="placa"
+                      className="text-[13px] font-bold text-negrito"
                     >
-                        Número de placa del transportista
+                      Número de placa del transportista
                     </FieldLabel>
 
                     <Input
-                        id="num_placa"
-                        type="text"
-                        placeholder="Número de placa ..."
-                        className="placeholder:text-placeholder"
-                        value={field.value ?? ""}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        onChange={(e) => {
+                      id="num_placa"
+                      type="text"
+                      placeholder="Número de placa ..."
+                      className="placeholder:text-placeholder"
+                      value={field.value ?? ""}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                      onChange={(e) => {
                         const value = e.target.value
                         field.onChange(value)
-                        }}
+                      }}
                     />
 
                     {fieldState.error && (
-                        <FieldError className="text-rojito">
+                      <FieldError className="text-rojito">
                         {fieldState.error.message}
-                        </FieldError>
+                      </FieldError>
                     )}
-                    </Field>
+                  </Field>
                 )}
-                />
+              />
             </FieldGroup>
-            </form>
+          </form>
 
-            {/* FOOTER FIJO */}
-            <DialogFooter className="border-t p-4">
+          {/* FOOTER FIJO */}
+          <DialogFooter className="border-t p-4">
             <Button
-                onClick={form.handleSubmit(onSubmit)}
-                className="cursor-pointer hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
+              onClick={form.handleSubmit(onSubmit)}
+              className="cursor-pointer hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
             >
-                <span>Generar Manifiesto</span>
+              <span>Generar Manifiesto</span>
             </Button>
             <Button
-                className="cursor-pointer bg-[#922b21] hover:bg-[#A94438] focus:bg-[#A94438] focus:outline-none"
-                onClick={() => setOpen(false)}
+              className="cursor-pointer bg-[#922b21] hover:bg-[#A94438] focus:bg-[#A94438] focus:outline-none"
+              onClick={() => setOpen(false)}
             >
-                <span>Cancelar</span>
+              <span>Cancelar</span>
             </Button>
-            </DialogFooter>
+          </DialogFooter>
         </DialogContent>
-        </Dialog>
+      </Dialog>
     </div>
   )
 }

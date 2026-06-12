@@ -322,7 +322,7 @@ export function ResiduosPeligrosos() {
                     return (
                       <Field data-invalid={fieldState.invalid}>
                         <FieldLabel className="text-[13px] font-bold text-negrito">
-                          Estado de la Matería *
+                          Tipo de Residuo *
                         </FieldLabel>
 
                         <Combobox

@@ -171,6 +171,7 @@ export interface ResiduoFiltroEstadistica {
   tipo_residuo: number[];
   tipo_generador: number[];
   area_generacion: number[];
+  agregacion_materia: number[];
 }
 
 export interface cantidadResiduosPendientes {
@@ -193,11 +194,9 @@ export interface ListResiduoPeligrosoManifiestos {
 
 
 export interface ManifiestoPeligrosoPDF {
-  
   destino_final: string;
   numero_manifiesto: string;
   transportista: number;
   num_placa: string;
-  responsable_contenido: string;
   responsable_recepcion: string;
 }

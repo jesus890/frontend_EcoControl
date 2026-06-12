@@ -55,6 +55,10 @@ export const listadoAreaGeneracionRPGeneral = () =>
 export const listadoAreaGeneracionMultiple = (tipo_generador: number[]) =>
   apiRequest<any>(axiosAuth.post("/listado_areageneracion_multiple", {tipo_generador: tipo_generador}))
 
+export const listadoAgregacionMateriaMultiple = (tipo_materia: number[]) =>
+  apiRequest<any>(axiosAuth.post("/listado_agregacionmateria_multiple", {agregacion_materia: tipo_materia}))
+
+
 
 
 export const listadoDestinoFinalRP = () =>

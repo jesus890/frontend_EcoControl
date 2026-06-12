@@ -120,7 +120,8 @@ export function Reporte3() {
     fRangos: null,
     tipo_residuo: [],
     tipo_generador: [],
-    area_generacion: [] 
+    area_generacion: [],
+    agregacion_materia: []
   })
 
   //tipo de fecha
@@ -205,7 +206,8 @@ export function Reporte3() {
       fRangos: values.fRangos,
       tipo_residuo: values.tipoResiduo,
       tipo_generador: values.tipoGenerador,
-      area_generacion: values.tipoArea
+      area_generacion: values.tipoArea,
+      agregacion_materia: []
     }
 
     //guarda los filtros en un state

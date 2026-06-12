@@ -11,7 +11,7 @@ import type { ReporteI, ManifiestoPeligrosoPDF } from "@/interfaces/interfaces"
 import { generarReporteManifiestoRP } from "../api/service"
 import { ArrowBigDownDash } from "lucide-react"
 import { Loader } from "lucide-react"
-import { Printer } from 'lucide-react';
+import { Printer } from "lucide-react"
 
 interface PropI {
   data: ManifiestoPeligrosoPDF
@@ -19,27 +19,29 @@ interface PropI {
   setOpen: (prev: boolean) => void
 }
 
-export function DialogResiduoPeligrosoManfiesto({ data, open, setOpen }: PropI) {
-
-  const [reporteData, setReporteData] = useState<ReporteI>();
-  const [loading, setLoading] = useState<Boolean>(false);
+export function DialogResiduoPeligrosoManfiesto({
+  data,
+  open,
+  setOpen,
+}: PropI) {
+  const [reporteData, setReporteData] = useState<ReporteI>()
+  const [loading, setLoading] = useState<Boolean>(false)
 
   useEffect(() => {
     if (open) getReporte()
   }, [open])
 
   const getReporte = async () => {
-    const result = await generarReporteManifiestoRP(data);
-    console.log({data})
-    setReporteData(result.data);
+    const result = await generarReporteManifiestoRP(data)
+    console.log({ data })
+    setReporteData(result.data)
   }
-
 
   const descargarFicha = async () => {
     try {
-      setLoading(true);
-      await sleep(4000); // 4 segundos
-      downloadBase64Pdf(reporteData?.pdf_blob);
+      setLoading(true)
+      await sleep(4000) // 4 segundos
+      downloadBase64Pdf(reporteData?.pdf_blob)
     } catch (ex) {
       console.log({ ex })
     } finally {
@@ -58,7 +60,6 @@ export function DialogResiduoPeligrosoManfiesto({ data, open, setOpen }: PropI) 
       setLoading(false)
     }
   }
-
 
   const sleep = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms))
@@ -114,8 +115,10 @@ export function DialogResiduoPeligrosoManfiesto({ data, open, setOpen }: PropI) 
     document.body.appendChild(iframe)
 
     iframe.onload = () => {
-      iframe.contentWindow?.focus()
-      iframe.contentWindow?.print()
+      setTimeout(() => {
+        iframe.contentWindow?.focus()
+        iframe.contentWindow?.print()
+      }, 1000)
 
       // Limpiar recursos
       setTimeout(() => {
@@ -135,16 +138,11 @@ export function DialogResiduoPeligrosoManfiesto({ data, open, setOpen }: PropI) 
         </DialogHeader>
 
         {/* CONTENIDO */}
-        
-          <iframe
-            className="w-full h-full"
-            src={reporteData?.pdf_blob}
-          />
-           
+
+        <iframe className="h-full w-full" src={reporteData?.pdf_blob} />
 
         {/* FOOTER FIJO */}
         <DialogFooter className="border-t p-4">
-          
           <Button
             className="cursor-pointer bg-[#922b21] hover:bg-[#A94438] focus:bg-[#A94438] focus:outline-none"
             onClick={() => descargarFicha()}
@@ -158,18 +156,12 @@ export function DialogResiduoPeligrosoManfiesto({ data, open, setOpen }: PropI) 
           </Button>
 
           <Button
-            onClick={()=>imprimirFicha()}
+            onClick={() => imprimirFicha()}
             className="cursor-pointer p-4 hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
           >
-            {loading ? (
-              <Loader className="animate-spin" />
-            ) : (
-              <Printer />
-            )}
+            {loading ? <Loader className="animate-spin" /> : <Printer />}
             <span>Imprimir Ficha</span>
           </Button>
-
-
         </DialogFooter>
       </DialogContent>
     </Dialog>
