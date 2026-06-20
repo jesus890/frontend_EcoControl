@@ -200,3 +200,15 @@ export interface ManifiestoPeligrosoPDF {
   num_placa: string;
   responsable_recepcion: string;
 }
+
+
+export interface ILogin {
+  email: string;
+  password: string; 
+}
+
+export interface IRestorePassword {
+  email: String;
+  password: String; 
+  password_confirmation: String;
+}

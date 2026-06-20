@@ -8,7 +8,9 @@ import type {
   ResiduoSolidoSave1I,
   ResiduoSolidoSave2I,
   ResiduoFiltroEstadistica,
-  ManifiestoPeligrosoPDF
+  ManifiestoPeligrosoPDF,
+  ILogin,
+  IRestorePassword
 } from "@/interfaces/interfaces"
 
 /* 
@@ -133,6 +135,9 @@ export const crearEstadisticoRME = (values: ResiduoFiltroEstadistica) =>
 export const creaReporteListadoRME = (values: ResiduoFiltroEstadistica) =>
   apiRequest<any>(axiosAuth.post("/reporteListadoEspecialRME", values))
 
+
+
+
 /* 
     R   E   S   I   D   U   O       P   E   L   I   G   R   O   S   O  
 */
@@ -176,3 +181,15 @@ export const obtenerTotalResiduos = () =>
 
 export const listadoResiduosPeligrososManifiesto = () =>
   apiRequest<any>(axiosAuth.post("/reporteListadoPeligrosoManifiesto", {}))
+
+
+
+/* 
+  L  O   G   I    N 
+*/
+
+export const iniciarSesion = (values : ILogin) =>
+  apiRequest<any>(axiosAuth.post("/login", values))
+
+export const restaurarPrimerPassword = (values : IRestorePassword) =>
+  apiRequest<any>(axiosAuth.post("/restore-first-password", values))
