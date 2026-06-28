@@ -29,7 +29,6 @@ export function Home() {
 
   const cargarEstadisticas = async() => {
     const result = await obtenerTotalResiduos();
-    console.log({result})
     if(result)
     {
       setEstadisticas(result.data);

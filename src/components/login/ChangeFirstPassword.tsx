@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import {  useState } from "react";
 
 import { LockKeyhole, Eye, EyeOff, LogIn,  MessageCircleWarning } from "lucide-react";
 import { useNavigate } from "react-router";
@@ -94,7 +94,7 @@ function ChangeFirstPassword({ userEmail }: IComponent) {
       </h1>
 
       <form
-        className="space-y-4 md:space-y-6"
+        className="space-y-4 md:space-y-6 flex flex-col h-[calc(55vh)]"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <div className="bg-inputs flex w-full rounded-lg border border-gray-700 p-3 shadow-lg">
@@ -202,7 +202,7 @@ function ChangeFirstPassword({ userEmail }: IComponent) {
 
         <Button
           type="submit"
-          className="mx-auto cursor-pointer bg-[#cb9636] p-4 hover:bg-[#fcd488] focus:outline-none w-[250px] items-center"
+          className="flex mt-auto  mx-auto w-[60%] cursor-pointer bg-[#cb9636] p-4 hover:bg-[#fcd488] focus:outline-none w-[250px] items-center"
         >
           <LogIn />
           <span className="text-white font-bold text-md"> Iniciar Sesión </span>

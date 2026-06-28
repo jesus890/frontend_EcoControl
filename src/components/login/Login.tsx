@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import {
   LockKeyhole,
   Eye,
@@ -83,7 +83,8 @@ function Login({ setFirstTime, setUserEmail }: IComponent) {
       } else //si ya ha cambiado su password por defecto
       {
         //credenciales validas
-        if (response.result) {
+        if (response.result)
+        {
           localStorage.setItem("token", response.data.token)
           navigate("/mml/environment")
         }
@@ -91,7 +92,7 @@ function Login({ setFirstTime, setUserEmail }: IComponent) {
     } catch (error) {
 
       console.log({ error })
-      
+
     } finally {
       //limpia los valores
       form.reset()
@@ -108,7 +109,7 @@ function Login({ setFirstTime, setUserEmail }: IComponent) {
       </h1>
 
       <form
-        className="space-y-4 md:space-y-6"
+        className="space-y-4 md:space-y-6 flex flex-col h-[calc(55vh)]"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         {/* Email */}
@@ -222,7 +223,7 @@ function Login({ setFirstTime, setUserEmail }: IComponent) {
 
         <Button
           type="submit"
-          className="mx-auto w-[250px] cursor-pointer items-center bg-[#cb9636] p-4 hover:bg-[#fcd488] focus:outline-none"
+          className="flex mt-auto  mx-auto w-[60%] cursor-pointer items-center bg-[#cb9636] p-4 hover:bg-[#fcd488] focus:outline-none"
         >
           <LogIn />
           <span className="text-md font-bold text-white"> Iniciar Sesión </span>

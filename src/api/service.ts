@@ -193,3 +193,9 @@ export const iniciarSesion = (values : ILogin) =>
 
 export const restaurarPrimerPassword = (values : IRestorePassword) =>
   apiRequest<any>(axiosAuth.post("/restore-first-password", values))
+
+export const cerrarSesion = () =>
+  apiRequest<any>(axiosAuth.post("/logout", {}))
+
+export const obtenerDatosSesion = () =>
+  apiRequest<any>(axiosAuth.post("/getUsuario", {}))

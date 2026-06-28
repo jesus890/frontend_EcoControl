@@ -212,3 +212,13 @@ export interface IRestorePassword {
   password: String; 
   password_confirmation: String;
 }
+
+export interface IUser {
+  id: string;
+  name: string; 
+  surname1: string;
+  surname2: string;
+  email: string;
+  rol: string;
+  fullname: string;
+}

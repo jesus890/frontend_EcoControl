@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -37,17 +37,31 @@ interface PropI {
 
 export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
 
-  const [transportista, setTransportista] = useState(
-    data.destino_final === "TAESA" ? 4 : 6
-  )
-  const [openDialog, setDialog] = useState(false)
+  const [transportista, setTransportista] = useState(0);
+
+  const [openDialog, setDialog] = useState(false);
+
   const [dataManifiesto, setdataManifiesto] = useState({
     destino_final: "",
     numero_manifiesto: "",
-    transportista: data.destino_final === "TAESA" ? 4 : 6,
+    transportista: 0,
     num_placa: "",
     responsable_recepcion: "",
   })
+
+  useEffect(() => {
+    if(data)
+    {
+      setTransportista(data.destino_final === "TAESA" ? 4 : 6);
+      setdataManifiesto({
+        destino_final: "",
+        numero_manifiesto: "",
+        transportista: data.destino_final === "TAESA" ? 4 : 6,
+        num_placa: "",
+        responsable_recepcion: ""
+      })
+    }
+  }, [data])
 
   //schema
   const schema = z.object({
@@ -82,9 +96,6 @@ export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
         num_placa: preData.num_placa,
         responsable_recepcion: preData.responsable2
       }
-
-      console.log({ dataToSave })
-      console.log({ transportista })
 
       setdataManifiesto(dataToSave)
       setDialog(true)

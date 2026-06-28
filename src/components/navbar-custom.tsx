@@ -32,18 +32,20 @@ export function NavBarCustom() {
       case "/mml/environment/trazabilidad":
         rutename = "Búsqueda de Trazabilidad";
       break;
+
+      case "/mml/environment/reportes":
+        rutename = "Reportes"
+      break;
+
     }
 
     setPathName(rutename);
  }
 
-
-
   return (
     <>
-    <div className="mb-6 h-20 w-full bg-white shadow-md">
-        <br />
-        <p className="ml-8 text-[20px] font-bold text-azulito"> {pathName} </p>
+      <div className="mb-6  w-full bg-white shadow-md">
+        <p className="ml-8 h-[40px] text-[20px] font-bold text-azulito"> {pathName} </p>
       </div>
     </>
   )

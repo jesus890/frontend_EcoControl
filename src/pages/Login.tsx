@@ -1,16 +1,10 @@
-import React, { useRef, useState, useEffect } from "react"
+import { useState } from "react"
 import LogoGeosoftsolutions from "../assets/smc.png"
 import ChangeFirstPassword from "../components/login/ChangeFirstPassword"
 import LoginComponent from "../components/login/Login"
 
 function Login() {
     
-  //snackbar de alertas
-  const [snackbar, setSnackbar] = React.useState({
-    open: false,
-    message: "",
-  })
-
   const [isFirstTime, setFirstTime] = useState<Boolean>(false);
   const [userEmail, setUserEmail] = useState<String>("");
 
