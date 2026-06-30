@@ -214,7 +214,7 @@ function Login({ setFirstTime, setUserEmail }: IComponent) {
             </div>
           </div>
           <a
-            href="/cambiar-contraseña"
+            href="/olvidaste-tu-contraseña"
             className="text-blanco text-sm font-medium font-semibold hover:underline"
           >
             ¿Olvidaste tu contraseña?

@@ -3,6 +3,9 @@ import { createBrowserRouter } from "react-router";
 import Layout from "@/app/layout";
 
 import Login from "@/pages/Login";
+import RestorePassword from "@/pages/RestorePassword";
+import ChangePassword from "@/pages/ChangePassword";
+
 import Home from "@/pages/Home";
 import ResiduosPeligrosos from "@/pages/ResiduosPeligrosos";
 import ManejoEspecial from "@/pages/ManejoEspecial";
@@ -20,12 +23,12 @@ export const appRouter = createBrowserRouter([
                 element: <Login />,
             },
             {
-                path: "cambiar-contraseña",
-                element: <Login />,
+                path: "olvidaste-tu-contraseña",
+                element: <RestorePassword />,
             },
             {
                 path: "actualizar-contraseña",
-                element: <Trazabilidad />,
+                element: <ChangePassword />,
             },
         ],
     },

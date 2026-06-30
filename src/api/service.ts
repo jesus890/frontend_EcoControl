@@ -10,7 +10,9 @@ import type {
   ResiduoFiltroEstadistica,
   ManifiestoPeligrosoPDF,
   ILogin,
-  IRestorePassword
+  IRestorePassword,
+  IRestore2Password,
+  IForgotPassword
 } from "@/interfaces/interfaces"
 
 /* 
@@ -193,6 +195,13 @@ export const iniciarSesion = (values : ILogin) =>
 
 export const restaurarPrimerPassword = (values : IRestorePassword) =>
   apiRequest<any>(axiosAuth.post("/restore-first-password", values))
+
+export const restaurarPassword = (values : IRestore2Password) =>
+  apiRequest<any>(axiosAuth.post("/restore-password", values))
+
+
+export const contrasenaOlvidada = (values : IForgotPassword) =>
+  apiRequest<any>(axiosAuth.post("/forgot-password", values))
 
 export const cerrarSesion = () =>
   apiRequest<any>(axiosAuth.post("/logout", {}))

@@ -207,10 +207,22 @@ export interface ILogin {
   password: string; 
 }
 
+export interface IForgotPassword {
+  email: string;
+}
+
+
 export interface IRestorePassword {
   email: String;
   password: String; 
   password_confirmation: String;
+}
+
+export interface IRestore2Password {
+  email: string | undefined;
+  token: string | undefined;
+  password: string; 
+  password_confirmation: string;
 }
 
 export interface IUser {

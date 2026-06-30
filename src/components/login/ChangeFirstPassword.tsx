@@ -205,7 +205,7 @@ function ChangeFirstPassword({ userEmail }: IComponent) {
           className="flex mt-auto  mx-auto w-[60%] cursor-pointer bg-[#cb9636] p-4 hover:bg-[#fcd488] focus:outline-none w-[250px] items-center"
         >
           <LogIn />
-          <span className="text-white font-bold text-md"> Iniciar Sesión </span>
+          <span className="text-white font-bold text-md"> Restablecer </span>
         </Button>
 
       </form>

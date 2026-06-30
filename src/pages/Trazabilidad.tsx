@@ -1,42 +1,45 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"
 
-import { NavBarCustom } from "@/components/navbar-custom";
+import { NavBarCustom } from "@/components/navbar-custom"
 
 //card
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card"
 
 //field
-import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScanSearch } from "lucide-react";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScanSearch } from "lucide-react"
 
-import { ArrowBigDownDash } from "lucide-react";
-import { Loader } from "lucide-react";
+import { ArrowBigDownDash } from "lucide-react"
+import { Loader } from "lucide-react"
 
 //validaciones y forms
-import { useForm, Controller } from "react-hook-form";
-import type { SubmitHandler } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form"
+import type { SubmitHandler } from "react-hook-form"
 import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from "@hookform/resolvers/zod"
 
 //endpoint
 import {
   crearSalidaResiduosPeligroso,
   generarReporteResiduoPeligroso,
-} from "@/api/service";
+} from "@/api/service"
 
 //interfaces
-import type { ResiduoPeligroPdfI, ReporteI } from "@/interfaces/interfaces";
+import type { ResiduoPeligroPdfI, ReporteI } from "@/interfaces/interfaces"
 
-import { toast } from "sonner";
-import { MessageCircleCheck } from "lucide-react";
-import { MessageCircleWarning } from "lucide-react";
+import { toast } from "sonner"
+import { MessageCircleCheck } from "lucide-react"
+import { MessageCircleWarning } from "lucide-react"
 
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5QrcodeScanner } from "html5-qrcode"
 
 export function Trazabilidad() {
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
   //schema
   const schema = z.object({
     folio: z.string().min(1, "El folio es obligatorio"),
@@ -54,20 +57,26 @@ export function Trazabilidad() {
   })
 
   const [dataPdf, setReporteData] = useState<ReporteI>();
+
   const [loading, setLoading] = useState<Boolean>(false);
+  const [loadingImg, setLoadingImg] = useState<Boolean>(false);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     try {
 
+      if (data.folio.length < 9) {
+        return
+      }
+
+      setLoadingImg(true);
+
       setReporteData({
         photo_blob: "",
-        pdf_blob: ""
-      });
+        pdf_blob: "",
+      })
 
       //actualiza la salida y num manifiesto
       const result = await crearSalidaResiduosPeligroso(data.folio)
-
-      console.log({ result })
 
       if (result.result == false) {
         toast(
@@ -111,6 +120,9 @@ export function Trazabilidad() {
           className: "bg-white !text-negrito !font-bold border !shadow-sm",
         }
       )
+    }
+    finally {
+      setLoadingImg(false);
     }
   }
 
@@ -211,15 +223,30 @@ export function Trazabilidad() {
 
                         <Input
                           id="folio"
+                          autoFocus
+                          type="text"
                           placeholder="MML-RP-001-2026"
                           className="placeholder:text-placeholder"
                           value={field.value ?? ""}
-                          onBlur={field.onBlur}
                           name={field.name}
-                          ref={field.ref}
+                          ref={(el) => {
+                            field.ref(el)
+                            inputRef.current = el
+                          }}
+                          onBlur={() => {
+                            field.onBlur()
+
+                            // Recupera el foco inmediatamente
+                            requestAnimationFrame(() => {
+                              inputRef.current?.focus()
+                            })
+                          }}
                           onChange={(e) => {
                             const value = e.target.value
                             field.onChange(value === "" ? undefined : value)
+                          }}
+                          onKeyDown={(e) => {
+                            console.log("Key pressed:", e.key)
                           }}
                         />
 
@@ -259,10 +286,18 @@ export function Trazabilidad() {
                       )}
                     </Button>
 
+
+                    {loadingImg && (
+                      <div className="absolute top-0 left-0 z-10 flex h-full w-full items-center justify-center bg-white bg-opacity-50">
+                        <Loader className="size-10 animate-spin anime-pulse text-[#3D4242]" />
+                      </div>
+                    )}
+
                     <img
                       className="w-full object-contain"
                       src={dataPdf?.photo_blob}
                     />
+
                   </div>
                 </div>
               </div>
