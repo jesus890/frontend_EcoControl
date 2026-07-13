@@ -14,6 +14,7 @@ import { ArrowBigDownDash } from "lucide-react"
 import { Loader } from "lucide-react"
 import { Printer } from 'lucide-react';
 
+
 interface PropI {
   open: boolean
   setOpen: (prev: boolean) => void
@@ -21,17 +22,30 @@ interface PropI {
 }
 
 export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
-  const [reporteData, setReporteData] = useState<ReporteI>()
-  const [loading, setLoading] = useState<Boolean>(false)
+
+  const [reporteData, setReporteData] = useState<ReporteI>();
+  const [loading, setLoading] = useState<Boolean>(false);
 
   useEffect(() => {
-    if (open) getReporte()
+    if (open) 
+    {
+      getReporte();
+    }
+    else
+    {
+      cleanReporte();
+    }
   }, [open])
 
   const getReporte = async () => {
     const result = await generarReporteResiduoPeligroso(data)
     setReporteData(result.data)
   }
+
+  const cleanReporte = () => {
+    setReporteData(undefined);
+  }
+
 
   const descargarFicha = async () => {
     try {
@@ -136,6 +150,13 @@ export function DialogResiduoPeligroso({ open, setOpen, data }: PropI) {
         <div className="flex-1 overflow-y-auto px-4">
           <FieldGroup>
             <Field>
+
+              {reporteData?.photo_blob == undefined && (
+                <div className="flex h-96 w-full items-center justify-center">
+                  <p className="animate-pulse">Cargando por favor espere...</p>
+                </div>
+              )}
+
               <img
                 className="w-full object-contain"
                 src={reporteData?.photo_blob}

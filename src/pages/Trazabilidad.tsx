@@ -1,44 +1,47 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef } from "react";
 
-import { NavBarCustom } from "@/components/navbar-custom"
+import { NavBarCustom } from "@/components/navbar-custom";
 
 //card
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card";
 
 //field
-import { Field, FieldLabel, FieldError } from "@/components/ui/field"
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ScanSearch } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScanSearch } from "lucide-react";
 
-import { ArrowBigDownDash } from "lucide-react"
-import { Loader } from "lucide-react"
+import { ArrowBigDownDash } from "lucide-react";
+import { Loader } from "lucide-react";
 
 //validaciones y forms
-import { useForm, Controller } from "react-hook-form"
-import type { SubmitHandler } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, Controller } from "react-hook-form";
+import type { SubmitHandler } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 //endpoint
 import {
   crearSalidaResiduosPeligroso,
   generarReporteResiduoPeligroso,
-} from "@/api/service"
+} from "@/api/service";
 
 //interfaces
-import type { ResiduoPeligroPdfI, ReporteI } from "@/interfaces/interfaces"
+import type { ResiduoPeligroPdfI, ReporteI } from "@/interfaces/interfaces";
 
-import { toast } from "sonner"
-import { MessageCircleCheck } from "lucide-react"
-import { MessageCircleWarning } from "lucide-react"
+import { toast } from "sonner";
+import { MessageCircleCheck } from "lucide-react";
+import { MessageCircleWarning } from "lucide-react";
 
-import { Html5QrcodeScanner } from "html5-qrcode"
+import { Html5QrcodeScanner } from "html5-qrcode";
+
+import { Checkbox } from "@/components/ui/checkbox";
+
 
 export function Trazabilidad() {
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null)
 
   //schema
   const schema = z.object({
@@ -60,25 +63,30 @@ export function Trazabilidad() {
 
   const [loading, setLoading] = useState<Boolean>(false);
   const [loadingImg, setLoadingImg] = useState<Boolean>(false);
+  const [manifiestoIndependiente, setManifiestoIndependiente] = useState<boolean>(false);
+  
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    try {
-
+    try 
+    {
       if (data.folio.length < 9) {
         return
       }
 
-      setLoadingImg(true);
+      setLoadingImg(true)
 
       setReporteData({
         photo_blob: "",
         pdf_blob: "",
       })
 
-      //actualiza la salida y num manifiesto
-      const result = await crearSalidaResiduosPeligroso(data.folio)
+      console.log({manifiestoIndependiente})
 
-      if (result.result == false) {
+      //actualiza la salida y num manifiesto
+      const result = await crearSalidaResiduosPeligroso(data.folio, manifiestoIndependiente)
+
+      if (result.result == false) 
+      {
         toast(
           result.message, //error
           {
@@ -86,7 +94,8 @@ export function Trazabilidad() {
             className: "bg-white !text-negrito !font-bold border !shadow-sm",
           }
         )
-      } else result.result && result.data
+      } 
+      else result.result && result.data 
       {
         const dataToGeneratePDF: ResiduoPeligroPdfI = {
           descMateria: "",
@@ -120,9 +129,8 @@ export function Trazabilidad() {
           className: "bg-white !text-negrito !font-bold border !shadow-sm",
         }
       )
-    }
-    finally {
-      setLoadingImg(false);
+    } finally {
+      setLoadingImg(false)
     }
   }
 
@@ -180,10 +188,7 @@ export function Trazabilidad() {
 
     scanner.render(
       (decodedText) => {
-        console.log("QR leído:", decodedText)
-
         form.setValue("folio", decodedText)
-
         // detener scanner después de leer
         scanner.clear()
       },
@@ -198,7 +203,7 @@ export function Trazabilidad() {
     }
   }, [])
 
-  return (
+  return (  
     <>
       <NavBarCustom />
 
@@ -208,6 +213,7 @@ export function Trazabilidad() {
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-[40%_60%]">
                 <div>
+                  
                   {/* QR */}
                   <Controller
                     name="folio"
@@ -243,7 +249,7 @@ export function Trazabilidad() {
                           }}
                           onChange={(e) => {
                             const value = e.target.value
-                            field.onChange(value === "" ? undefined : value)
+                            field.onChange(value === "" ? "" : value)
                           }}
                           onKeyDown={(e) => {
                             console.log("Key pressed:", e.key)
@@ -261,13 +267,22 @@ export function Trazabilidad() {
 
                   <Button
                     type="submit"
-                    className="mt-2 mb-3 w-[80%] cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
+                    className="mt-2 mb-3 w-full cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
                   >
                     <ScanSearch />
                     <span>Buscar</span>
                   </Button>
 
-                  <div id="reader" className="w-full max-w-md" />
+                  <div id="reader" className="mt-3 w-full max-w-md" />
+
+                  <div className="mt-2">
+                    <Field orientation="horizontal">
+                      <Checkbox id="toggle-checkbox" name="toggle-checkbox"  checked={manifiestoIndependiente} onCheckedChange={setManifiestoIndependiente} />
+                      <FieldLabel htmlFor="toggle-checkbox" className="font-bold"> Manifiesto independiente  </FieldLabel>
+                    </Field>
+                  </div>
+
+
                 </div>
 
                 {/* IMG */}
@@ -286,10 +301,9 @@ export function Trazabilidad() {
                       )}
                     </Button>
 
-
                     {loadingImg && (
-                      <div className="absolute top-0 left-0 z-10 flex h-full w-full items-center justify-center bg-white bg-opacity-50">
-                        <Loader className="size-10 animate-spin anime-pulse text-[#3D4242]" />
+                      <div className="bg-opacity-50 absolute top-0 left-0 z-10 flex h-full w-full items-center justify-center bg-white">
+                        <Loader className="anime-pulse size-10 animate-spin text-[#3D4242]" />
                       </div>
                     )}
 
@@ -297,7 +311,6 @@ export function Trazabilidad() {
                       className="w-full object-contain"
                       src={dataPdf?.photo_blob}
                     />
-
                   </div>
                 </div>
               </div>
