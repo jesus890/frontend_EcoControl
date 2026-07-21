@@ -22,6 +22,12 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
     accessorKey: "uuid",
     header: "Código",
   },
+  //folio
+  {
+    accessorFn: (row) => row.numero_folio,
+    id: "numero_folio",
+    header: "Número Folio",
+  },
   //nombre residuo
   {
     accessorFn: (row) => row.tipo_residuo?.descripcion,
@@ -91,7 +97,6 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
         </Button>
       )
     },
-
     //define como se ordena
     sortingFn: (rowA, rowB, columnId) => {
       const fechaA = new Date(rowA.getValue<string>(columnId)).getTime()
@@ -101,6 +106,39 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
       return fechaA - fechaB
     },
   },
+
+  //fecha salida
+  {
+    //define que valor usa la tabla internamente
+    accessorKey: "fecha_salida",
+
+    //define que se muestra visualmente
+    cell: ({ row }) => {
+      return row.original.ffecha_salida
+    },
+
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Fecha Salida
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+    //define como se ordena
+    sortingFn: (rowA, rowB, columnId) => {
+      const fechaA = new Date(rowA.getValue<string>(columnId)).getTime()
+
+      const fechaB = new Date(rowB.getValue<string>(columnId)).getTime()
+
+      return fechaA - fechaB
+    },
+  },
+
+
   //acciones
   {
     id: "acciones",

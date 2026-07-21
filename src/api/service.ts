@@ -160,9 +160,9 @@ export const crearReporteResiduosPeligroso = (values: ResiduoPeligroSaveI) =>
   apiRequest<any>(axiosAuth.post("/crearReporteResiduosPeligroso", values))
 
 //modulo de trazabilidad (cuando se escanea el QR)
-export const crearSalidaResiduosPeligroso = (folio: string, manifiesto_independiente: boolean) =>
+export const crearSalidaResiduos = (folio: string, manifiesto_independiente: boolean) =>
   apiRequest<any>(
-    axiosAuth.post("/crearSalidaResiduosPeligroso", { folio: folio, manifiesto_independiente: manifiesto_independiente })
+    axiosAuth.post("/crearSalidaResiduos", { folio: folio, manifiesto_independiente: manifiesto_independiente })
   )
 
 //estadisticas de barras

@@ -6,7 +6,6 @@ import { listadoResiduos } from "@/api/service"
 
 import type { ResiduoPeligroPdfI , ResiduoSolido1PdfI, ResiduoSolido2PdfI} from "@/interfaces/interfaces"
 
-
 import { DialogResiduoPeligroso } from "@/components/dialog-residuo-peligroso"
 import { DialogSolidoUrbano1 } from "@/components/dialog-solido-urbano-1";
 import { DialogSolidoUrbano2 } from "@/components/dialog-solido-urbano-2";

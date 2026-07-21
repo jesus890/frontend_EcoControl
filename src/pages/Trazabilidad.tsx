@@ -23,12 +23,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 //endpoint
 import {
-  crearSalidaResiduosPeligroso,
+  crearSalidaResiduos,
   generarReporteResiduoPeligroso,
+  generarReporteRME
 } from "@/api/service";
 
 //interfaces
-import type { ResiduoPeligroPdfI, ReporteI } from "@/interfaces/interfaces";
+import type { ResiduoPeligroPdfI, ResiduoSolido2PdfI,  ReporteI } from "@/interfaces/interfaces";
 
 import { toast } from "sonner";
 import { MessageCircleCheck } from "lucide-react";
@@ -80,10 +81,10 @@ export function Trazabilidad() {
         pdf_blob: "",
       })
 
-      console.log({manifiestoIndependiente})
-
+  
       //actualiza la salida y num manifiesto
-      const result = await crearSalidaResiduosPeligroso(data.folio, manifiestoIndependiente)
+      const result = await crearSalidaResiduos(data.folio, manifiestoIndependiente)
+
 
       if (result.result == false) 
       {
@@ -97,22 +98,43 @@ export function Trazabilidad() {
       } 
       else result.result && result.data 
       {
-        const dataToGeneratePDF: ResiduoPeligroPdfI = {
-          descMateria: "",
-          descResiduo: result.data.descResiduo,
-          descSubTipoResiduo: result.data.descSubTipoResiduo,
-          descGenerador: result.data.descGenerador,
-          descArea: result.data.descArea,
-          cantidad: result.data.cantidad,
-          fEntrada: result.data.fecha_entrada,
-          fSalida: result.data.fecha_salida,
-          uuid: result.data.uuid,
-          numManifiesto: result.data.numero_manifiesto,
+
+        if(result.message == "Reporte Peligroso!")
+        {
+          const dataToGeneratePDF: ResiduoPeligroPdfI = {
+            descMateria: "",
+            descResiduo: result.data.descResiduo,
+            descSubTipoResiduo: result.data.descSubTipoResiduo,
+            descGenerador: result.data.descGenerador,
+            descArea: result.data.descArea,
+            cantidad: result.data.cantidad,
+            fEntrada: result.data.fecha_entrada,
+            fSalida: result.data.fecha_salida,
+            uuid: result.data.uuid,
+            numManifiesto: result.data.numero_manifiesto
+          }
+
+          const result2 = await generarReporteResiduoPeligroso(dataToGeneratePDF);
+          setReporteData(result2.data);
         }
+        else if(result.message == "Reporte Especial!")
+        {
+          const data2ToGeneratePDF : ResiduoSolido2PdfI = {
+            nombreResiduo: result.data.residuo,
+            descGenerador: result.data.generador,
+            descArea: result.data.area,
+            cantidad: result.data.cantidad,
+            fEntrada: result.data.fechaEntrada,
+            fSalida: result.data.fechaSalida,
+            descTransportistas: result.data.transportista,
+            descTratamiento: result.data.tratamiento,
+            manifiesto: result.data.manifiesto
+          }
 
-        const result2 = await generarReporteResiduoPeligroso(dataToGeneratePDF)
-        setReporteData(result2.data)
-
+          const result3 = await generarReporteRME(data2ToGeneratePDF);
+          setReporteData(result3.data);
+        }
+        
         toast(
           result.message, //sucess
           {

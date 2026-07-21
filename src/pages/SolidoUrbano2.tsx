@@ -89,7 +89,7 @@ export function SolidoUrbano2() {
     descArea: "",
     cantidad: 1,
     fEntrada: todayString,
-    fSalida: todayString,
+    fSalida: null,
     descTransportistas: "",
     descTratamiento: "",
     manifiesto: ""
@@ -124,8 +124,6 @@ export function SolidoUrbano2() {
 
     fEntrada: z.string().min(1, "Fecha requerida"),
 
-    fSalida: z.string().min(1, "Fecha requerida"),
-
     tipoTransportista: z
       .string()
       .nullable()
@@ -138,6 +136,13 @@ export function SolidoUrbano2() {
       .nullable()
       .refine((val) => val !== null && val !== "", {
         message: "Selecciona un tipo de tipo de tratamiento",
+      }),
+
+    numero_folio: z
+      .string()
+      .nullable()
+      .refine((val) => val !== null && val !== "", {
+        message: "Selecciona un número de folio",
       })
   })
 
@@ -147,12 +152,12 @@ export function SolidoUrbano2() {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
+      numero_folio: "",
       tipoResiduo: "",
       cantidad: 0,
       tipoGenerador: "",
       tipoArea: "",
       fEntrada: todayString,
-      fSalida: todayString,
       tipoTransportista: "",
       tipoTratamiento: ""
     },
@@ -200,12 +205,13 @@ export function SolidoUrbano2() {
     try
     {
       const dataToSave = {
+        numFolio: data.numero_folio,
         descResiduo: data.tipoResiduo,
         cantidad: data.cantidad,
         descGenerador: data.tipoGenerador,
         descArea: data.tipoArea,
         fEntrada: data.fEntrada,
-        fSalida: data.fSalida,
+        fSalida: null,
         descTratamiento: data.tipoTratamiento,
         descTransportista: data.tipoTransportista
       }
@@ -229,7 +235,7 @@ export function SolidoUrbano2() {
           descArea: result.data.area_generacion?.descripcion,
           cantidad: values.cantidad,
           fEntrada: values.fEntrada,
-          fSalida: values.fEntrada,
+          fSalida: null,
           descTratamiento: result.data.tipo_tratamiento?.descripcion,
           descTransportistas: result.data.transportista?.descripcion,
           manifiesto: result.data.numero_manifiesto
@@ -263,6 +269,43 @@ export function SolidoUrbano2() {
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
+              
+              {/* Numero de folio */}
+              <Controller
+                name="numero_folio"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel
+                      htmlFor="numero_folio"
+                      className="text-[13px] font-bold text-negrito"
+                    >
+                      Número de Folio
+                    </FieldLabel>
+
+                    <Input
+                      id="numero_folio"
+                      placeholder="Número de folio"
+                      className="placeholder:text-placeholder"
+                      value={field.value ?? ""}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        field.onChange(value === "" ? "" : value)
+                      }}
+                    />
+
+                    {fieldState.error && (
+                      <FieldError className="text-rojito">
+                        {fieldState.error.message}
+                      </FieldError>
+                    )}
+                  </Field>
+                )}
+              />
+
               {/* Tipo del residuo */}
               <Controller
                 name="tipoResiduo"
@@ -512,77 +555,7 @@ export function SolidoUrbano2() {
                 )}
               />
 
-              {/* Fecha de salida */}
-              <Controller
-                name="fSalida"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel
-                      htmlFor="fSalida"
-                      className="text-[13px] font-bold text-negrito"
-                    >
-                      Fecha de Salida *
-                    </FieldLabel>
-
-                    <Popover>
-                      <PopoverTrigger>
-                        <div
-                          className="h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 py-1 text-left text-base text-placeholder transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm"
-                          aria-invalid={fieldState.invalid}
-                        >
-                          {field.value
-                            ? (() => {
-                                const [year, month, day] =
-                                  field.value.split("-")
-
-                                return `${day}/${month}/${year}`
-                              })()
-                            : "Selecciona una fecha ..."}
-                        </div>
-                      </PopoverTrigger>
-
-                      <PopoverContent
-                        className="w-auto overflow-hidden p-0"
-                        align="start"
-                      >
-                        <Calendar
-                          mode="single"
-                          selected={
-                            field.value
-                              ? new Date(field.value + "T00:00:00")
-                              : undefined
-                          }
-                          defaultMonth={
-                            field.value
-                              ? new Date(field.value + "T00:00:00")
-                              : new Date()
-                          }
-                          captionLayout="dropdown"
-                          onSelect={(date) => {
-                            if (!date) return
-
-                            const formatted = `${date.getFullYear()}-${String(
-                              date.getMonth() + 1
-                            ).padStart(2, "0")}-${String(
-                              date.getDate()
-                            ).padStart(2, "0")}`
-
-                            field.onChange(formatted)
-                          }}
-                        />
-                      </PopoverContent>
-                    </Popover>
-
-                    {fieldState.error && (
-                      <FieldError className="text-rojito">
-                        {fieldState.error.message}
-                      </FieldError>
-                    )}
-                  </Field>
-                )}
-              />
-
+              
               {/* Tratamientos */}
               <Controller
                 name="tipoTratamiento"

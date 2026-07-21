@@ -128,7 +128,9 @@ export function Reporte3() {
   const [tipoFecha, setTipoFecha] = useState<CatalogoI[]>([]);
 
   //listado
-  const [data, setData] = useState<ResiduoListadoEstadistica[]>([])
+  const [data, setData] = useState<ResiduoListadoEstadistica[]>([]);
+
+  const [procederBusqueda, setProcederBusqueda] = useState<boolean>(false)
 
   //grafica
   const chartRef = useRef<ReactECharts>(null)
@@ -180,9 +182,17 @@ export function Reporte3() {
     cargarEstadistica()
   }, [])
 
+
+  useEffect(() => {
+    if (procederBusqueda) {
+      cargarListado()
+    }
+  }, [procederBusqueda])
+
   useEffect(() => {
     cargarListado()
-  }, [filtros])
+  }, [])
+
 
   //carga los diferentes catalogos que no dependen de otro
   const cargarCatalogos = async () => {
@@ -259,7 +269,9 @@ export function Reporte3() {
   //guarda la información
   const onSubmit: SubmitHandler<FormValues> = async () => {
     try {
-      await cargarEstadistica()
+
+      setProcederBusqueda(true);
+      await cargarEstadistica();
      
     } catch (ex) {
       toast(
@@ -269,6 +281,8 @@ export function Reporte3() {
           className: "bg-white !text-negrito !font-bold border !shadow-sm",
         }
       )
+    } finally {
+      setProcederBusqueda(false);
     }
   }
 

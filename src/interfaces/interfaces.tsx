@@ -60,12 +60,13 @@ export interface ResiduoSolidoSave1I {
 }
 
 export interface ResiduoSolidoSave2I {
+    numFolio: String|null,
     descResiduo: String|null,
     cantidad: Number,
     descGenerador: String|null,
     descArea: String|null,
     fEntrada: String;
-    fSalida: String;
+    fSalida: String|null;
     descTratamiento: String|null;
     descTransportista: String|null; 
 }
@@ -105,6 +106,7 @@ export interface ResiduoPeligroPdfI {
 export interface ListResiduoPeligroso {
     id: number;
     uuid: string;
+    numero_folio: string;
     tipo_residuo: CatalogoSimple;
     subtipo_residuo: CatalogoSimple | null;
     cantidad: number;

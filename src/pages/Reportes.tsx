@@ -1,4 +1,4 @@
-//Tabss
+//Tabs
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { NavBarCustom } from "@/components/navbar-custom"

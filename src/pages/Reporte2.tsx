@@ -120,7 +120,7 @@ export function Reporte2() {
     tipo_residuo: [],
     tipo_generador: [],
     area_generacion: [],
-    agregacion_materia: []
+    agregacion_materia: [],
   })
 
   //tipo de fecha
@@ -128,6 +128,8 @@ export function Reporte2() {
 
   //listado
   const [data, setData] = useState<ResiduoListadoEstadistica[]>([])
+
+  const [procederBusqueda, setProcederBusqueda] = useState<boolean>(false)
 
   //grafica
   const chartRef = useRef<ReactECharts>(null)
@@ -179,8 +181,14 @@ export function Reporte2() {
   }, [])
 
   useEffect(() => {
+    if (procederBusqueda) {
+      cargarListado()
+    }
+  }, [procederBusqueda])
+
+  useEffect(() => {
     cargarListado()
-  }, [filtros])
+  }, [])
 
   //carga los diferentes catalogos que no dependen de otro
   const cargarCatalogos = async () => {
@@ -205,7 +213,7 @@ export function Reporte2() {
       tipo_residuo: values.tipoResiduo,
       tipo_generador: values.tipoGenerador,
       area_generacion: values.tipoArea,
-      agregacion_materia: []
+      agregacion_materia: [],
     }
 
     //guarda los filtros en un state
@@ -256,7 +264,10 @@ export function Reporte2() {
   //guarda la información
   const onSubmit: SubmitHandler<FormValues> = async () => {
     try {
-      await cargarEstadistica()
+      
+      setProcederBusqueda(true);
+      await cargarEstadistica();
+
     } catch (ex) {
       toast(
         "Ocurrio un error, vaya esto es incomodo", //error
@@ -265,6 +276,8 @@ export function Reporte2() {
           className: "bg-white !text-negrito !font-bold border !shadow-sm",
         }
       )
+    } finally {
+      setProcederBusqueda(false)
     }
   }
 
@@ -392,7 +405,6 @@ export function Reporte2() {
   const cargarListado = async () => {
     const result = await creaReporteListadoRSU(filtros)
     if (result) {
-      console.log(result.data)
       setData(result.data)
     }
   }
@@ -407,7 +419,8 @@ export function Reporte2() {
   }
 
   useEffect(() => {
-    cargarCatalogoArea(values.tipoGenerador)
+    if (values.tipoGenerador.length > 0)
+      cargarCatalogoArea(values.tipoGenerador)
   }, [values.tipoGenerador])
 
   return (

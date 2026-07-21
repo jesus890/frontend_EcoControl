@@ -39,7 +39,7 @@ export function Home() {
     <>
       <NavBarCustom />
 
-      <div className="mx-auto mb-8 grid grid-cols-1 gap-5 md:grid-cols-3 p-4 mx-auto">
+      <div className="mx-auto mb-8 grid grid-cols-1 gap-5 md:grid-cols-3 p-4">
         <Card tabIndex={0} className="border-l-4 border-verdecito transition-transform duration-200 hover:-translate-y-2 outline-none shadow-md w-[80%]">
           <CardHeader>
             <CardTitle className="text-grisito text-[12px] font-bold"> RESIDUOS REGISTRADOS HOY </CardTitle>

@@ -118,8 +118,11 @@ export function Reporte1() {
     })
 
   const [filtros, setFiltros] = useState<ResiduoFiltroEstadistica>({
-    tipoFecha: null,
-    fRangos: null,
+    tipoFecha: "",
+    fRangos: {
+      "from": "",
+      "to": ""
+    },
     tipo_residuo: [],
     tipo_generador: [],
     area_generacion: [],
@@ -130,7 +133,9 @@ export function Reporte1() {
   const [tipoFecha, setTipoFecha] = useState<CatalogoI[]>([])
 
   //listado
-  const [data, setData] = useState<ResiduoListadoEstadistica[]>([])
+  const [data, setData] = useState<ResiduoListadoEstadistica[]>([]);
+
+  const [procederBusqueda, setProcederBusqueda] = useState<boolean>(false);
 
   //grafica
   const chartRef = useRef<ReactECharts>(null)
@@ -147,6 +152,7 @@ export function Reporte1() {
     tipoResiduo: z.array(z.number()),
 
     tipoGenerador: z.array(z.number()),
+  
 
     tipoArea: z.array(z.number()),
 
@@ -169,10 +175,12 @@ export function Reporte1() {
         from: "",
         to: "",
       },
+      tipoMateria: [],
       tipoResiduo: [],
       tipoGenerador: [],
       tipoArea: [],
       tipoExportacion: "",
+
     },
     mode: "onBlur",
   })
@@ -185,8 +193,13 @@ export function Reporte1() {
   }, [])
 
   useEffect(() => {
-    cargarListado()
-  }, [filtros])
+    if(procederBusqueda)
+    cargarListado();
+  }, [procederBusqueda])
+
+  useEffect(() => {
+    cargarListado();
+  }, [])
 
   //carga los diferentes catalogos que no dependen de otro
   const cargarCatalogos = async () => {
@@ -265,6 +278,7 @@ export function Reporte1() {
   //guarda la información
   const onSubmit: SubmitHandler<FormValues> = async () => {
     try {
+      setProcederBusqueda(true);
       await cargarEstadistica()
     } catch (ex) {
       toast(
@@ -274,6 +288,8 @@ export function Reporte1() {
           className: "bg-white !text-negrito !font-bold border !shadow-sm",
         }
       )
+    }finally{
+      setProcederBusqueda(false);
     }
   }
 
@@ -423,11 +439,13 @@ export function Reporte1() {
   }
 
   useEffect(() => {
-    cargarCatalogoArea(values.tipoGenerador)
+    if(values.tipoGenerador.length > 0)
+      cargarCatalogoArea(values.tipoGenerador)
   }, [values.tipoGenerador])
 
    useEffect(() => {
-    cargarCatalogoNombreResiduo(values.tipoMateria)
+    if(values.tipoMateria.length > 0)
+      cargarCatalogoNombreResiduo(values.tipoMateria)
   }, [values.tipoMateria])
 
 

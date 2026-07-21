@@ -6,9 +6,11 @@ import type {
   ColumnDef,
   SortingState,
   ColumnFiltersState,
+  FilterFn,
 } from "@tanstack/react-table"
 
 import {
+
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -47,6 +49,23 @@ export function DataTable<TData, TValue>({
 
   const [sorting, setSorting] = useState<SortingState>([]) //ordenamiento
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]) //buscador
+  const [globalFilter, setGlobalFilter] = useState("");
+
+  const globalFilterFn: FilterFn<any> = (row, _, value) => {
+    const search = value.toLowerCase();
+
+    return [
+      row.getValue("uuid"),
+      row.getValue("tipo_residuo"),
+      row.getValue("numero_folio"),
+    ]
+      .some(
+        (val) =>
+          String(val ?? "")
+            .toLowerCase()
+            .includes(search)
+      );
+  };
 
   const table = useReactTable({
     data,
@@ -63,7 +82,11 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
       columnFilters,
+      globalFilter
     },
+
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn,
 
     onColumnFiltersChange: setColumnFilters,
 
@@ -74,22 +97,15 @@ export function DataTable<TData, TValue>({
     },
   })
 
+
   return (
     <div className="overflow-hidden rounded-md border">
 
       <div className="flex items-center py-4">
         <Input
           placeholder="Filtrar..."
-          value={
-            (table
-              .getColumn("tipo_residuo")
-              ?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table
-              .getColumn("tipo_residuo")
-              ?.setFilterValue(event.target.value)
-          }
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm ml-4"
         />
       </div>
