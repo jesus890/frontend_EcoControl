@@ -6,11 +6,9 @@ import type {
   ColumnDef,
   SortingState,
   ColumnFiltersState,
-  FilterFn,
 } from "@tanstack/react-table"
 
 import {
-
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -40,38 +38,16 @@ interface DataTableProps<TData, TValue> {
     row: TData
   ) => void
 
-  editarResiduo: (
-    row: TData
-  ) => void
-  
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  abrirVistaPrevia,
-  editarResiduo
+  abrirVistaPrevia
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = useState<SortingState>([]) //ordenamiento
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]) //buscador
-  const [globalFilter, setGlobalFilter] = useState("");
-
-  const globalFilterFn: FilterFn<any> = (row, _, value) => {
-    const search = value.toLowerCase();
-
-    return [
-      row.getValue("uuid"),
-      row.getValue("tipo_residuo"),
-      row.getValue("numero_folio"),
-    ]
-      .some(
-        (val) =>
-          String(val ?? "")
-            .toLowerCase()
-            .includes(search)
-      );
-  };
 
   const table = useReactTable({
     data,
@@ -88,22 +64,16 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
       columnFilters,
-      globalFilter
     },
-
-    onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn,
 
     onColumnFiltersChange: setColumnFilters,
 
     getFilteredRowModel: getFilteredRowModel(),
 
     meta: {
-      abrirVistaPrevia,
-      editarResiduo
+      abrirVistaPrevia
     },
   })
-
 
   return (
     <div className="overflow-hidden rounded-md border">
@@ -111,8 +81,16 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4">
         <Input
           placeholder="Filtrar..."
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
+          value={
+            (table
+              .getColumn("nombre_residuos")
+              ?.getFilterValue() as string) ?? ""
+          }
+          onChange={(event) =>
+            table
+              .getColumn("nombre_residuos")
+              ?.setFilterValue(event.target.value)
+          }
           className="max-w-sm ml-4"
         />
       </div>

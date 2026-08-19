@@ -1,11 +1,17 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type {
-  ListResiduoPeligroso
-} from "@/interfaces/interfaces";
-import { ArrowUpDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tag } from 'lucide-react';
+import type { ListResiduoPeligroso } from "@/interfaces/interfaces"
+import { ArrowUpDown, Pencil } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Tag } from "lucide-react"
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -138,7 +144,6 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
     },
   },
 
-
   //acciones
   {
     id: "acciones",
@@ -147,19 +152,22 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
     cell: ({ row, table }) => {
       const residuo = row.original
       return (
-        <Button
-          variant="outline"
-          className="bg-white font-bold text-azulito cursor-pointer p-4 h-12"
-          size="sm"
-          onClick={() => {
-            table.options.meta?.abrirVistaPrevia(residuo)
-          }}
-        >
-          <div>
-            <Tag className="text-azulito mx-auto mt-1"/>
-            <span className="mt-1">Etiqueta</span>
-          </div>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button variant="outline" className="bg-white font-bold text-azulito cursor-pointer p-4 h-12" size="sm" >...</Button>}
+          />
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => table.options.meta?.abrirVistaPrevia(residuo)}>
+              <span className="mt-1 mx-auto">Etiqueta</span>
+              <Tag className="text-azulito mt-1"/>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => table.options.meta?.editarResiduo?.(residuo)}>
+              <span className="mt-1 mx-auto">Editar</span>
+              <Pencil className="text-azulito mt-1"/>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     },
   },

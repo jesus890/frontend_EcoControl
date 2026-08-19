@@ -8,6 +8,10 @@ declare module "@tanstack/react-table" {
       row: TData
     ) => void
 
+    editarResiduo?: (
+      row: TData
+    ) => void
+
   }
 
 }

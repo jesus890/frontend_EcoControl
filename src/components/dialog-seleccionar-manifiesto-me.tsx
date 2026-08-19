@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 
-import type { ListResiduoPeligrosoManifiestos } from "@/interfaces/interfaces"
+import type { ListEspecialManifiestos } from "@/interfaces/interfaces"
 
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { DialogResiduoPeligrosoManfiesto } from "./dialog-residuo-manifiesto-rp"
+import { DialogResiduoManfiestoEspecial } from "./dialog-residuo-manifiesto-especial";
 
 //validaciones y forms
 import { useForm, Controller } from "react-hook-form"
@@ -30,44 +30,28 @@ import {
 } from "@/components/ui/field"
 
 interface PropI {
-  data: ListResiduoPeligrosoManifiestos
+  data: ListEspecialManifiestos
   open: boolean
   setOpen: (prev: boolean) => void
 }
 
-export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
+export function DialogSeleccionarManifiestoME({ data, open, setOpen }: PropI) {
 
-  const [transportista, setTransportista] = useState(0);
+  const [transportista, setTransportista] = useState(0)
 
-  const [openDialog, setDialog] = useState(false);
+  const [openDialog, setDialog] = useState(false)
 
   const [dataManifiesto, setdataManifiesto] = useState({
     responsable_protesta: "",
-    destino_final: "",
     numero_manifiesto: "",
     transportista: 0,
     num_placa: "",
     responsable_recepcion: "",
   })
 
-  useEffect(() => {
-    if(data)
-    {
-      setTransportista(data.destino_final === "TAESA" ? 4 : 6);
-      setdataManifiesto({
-        responsable_protesta: "",
-        destino_final: "",
-        numero_manifiesto: "",
-        transportista: data.destino_final === "TAESA" ? 4 : 6,
-        num_placa: "",
-        responsable_recepcion: ""
-      })
-    }
-  }, [data])
-
   //schema
   const schema = z.object({
-    
+
     responsable0: z.string().refine((val) => val !== null && val !== "", {
       message: "Seleccione un responsable",
     }),
@@ -98,11 +82,10 @@ export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
     try {
       const dataToSave = {
         responsable_protesta: preData.responsable0,
-        destino_final: data.destino_final,
         numero_manifiesto: data.numero_manifiesto,
-        transportista: data.destino_final == "BIOS TERRA" ? 6 : transportista,
+        transportista: transportista,
         num_placa: preData.num_placa,
-        responsable_recepcion: preData.responsable2
+        responsable_recepcion: preData.responsable2,
       }
 
       setdataManifiesto(dataToSave)
@@ -112,11 +95,13 @@ export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
 
   return (
     <div>
-      <DialogResiduoPeligrosoManfiesto
+
+      <DialogResiduoManfiestoEspecial
         data={dataManifiesto}
         open={openDialog}
         setOpen={setDialog}
       />
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="flex max-h-[90vh] w-full max-w-2xl flex-col">
           <DialogHeader className="px-4 pt-4">
@@ -126,35 +111,29 @@ export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
           </DialogHeader>
 
           {/* CONTENIDO SCROLLEABLE */}
-          {data.destino_final == "TAESA" && (
-            <div className="flex-1 overflow-y-auto px-4">
-              <RadioGroup
-                defaultValue="4"
-                className="w-fit"
-                onValueChange={(value) => setTransportista(value)}
-              >
-                <div className="flex items-center gap-3">
-                  <Label className="text-bold">
-                    Seleccione un transportista
-                  </Label>
-                </div>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="4" id="4" />
-                  <Label htmlFor="r1">
-                    Transportes San Isidro del Norte, S.A de C.V.
-                  </Label>
-                </div>
-                <div className="flex items-center gap-3">
-                  <RadioGroupItem value="5" id="5" />
-                  <Label htmlFor="r2">Transportes Osoyer S.A. de C.V.</Label>
-                </div>
-              </RadioGroup>
-            </div>
-          )}
+          <div className="flex-1 overflow-y-auto px-4">
+            <RadioGroup
+              defaultValue="9"
+              className="w-fit"
+              onValueChange={(value) => setTransportista(value)}
+            >
+              <div className="flex items-center gap-3">
+                <Label className="text-bold">Seleccione un transportista</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <RadioGroupItem value="7" id="7" />
+                <Label htmlFor="r1">PET CUEVAS</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <RadioGroupItem value="8" id="8" />
+                <Label htmlFor="r2">EL COMANCHE.</Label>
+              </div>
+            </RadioGroup>
+          </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-1">
-
+              
               {/* Responsable  (Bajo protesta) */}
               <Controller
                 name="responsable0"
@@ -191,9 +170,9 @@ export function DialogSeleccionarManifiesto({ data, open, setOpen }: PropI) {
                   </Field>
                 )}
               />
-
               
-              {/* Responsable Recepcion */}
+
+              {/* Responsable Recepcion (Transportista) */}
               <Controller
                 name="responsable2"
                 control={form.control}

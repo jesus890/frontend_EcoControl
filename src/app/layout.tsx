@@ -11,7 +11,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { LogOutIcon } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -109,12 +109,12 @@ export default function Layout() {
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <div className="rounded-full cursor-pointer">
                   <Avatar>
                     <AvatarImage src={photo} alt="shadcn" />
                     <AvatarFallback>LR</AvatarFallback>
                   </Avatar>
-                </Button>
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuGroup>

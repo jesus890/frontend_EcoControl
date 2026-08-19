@@ -47,7 +47,15 @@ export const appRouter = createBrowserRouter([
                 element: <ResiduosPeligrosos />,
             },
             {
+                path: "residuos-peligrosos/:uuid",
+                element: <ResiduosPeligrosos />,
+            },
+            {
                 path: "manejo-especial",
+                element: <ManejoEspecial />,
+            },
+            {
+                path: "manejo-especial/:uuid",
                 element: <ManejoEspecial />,
             },
             {

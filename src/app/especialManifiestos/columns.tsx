@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import type {
-  ListResiduoPeligrosoManifiestos
+  ListEspecialManifiestos
 } from "@/interfaces/interfaces";
 import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { FileText } from 'lucide-react';
 // You can use a Zod schema here if you want.
 
 
-export const columns: ColumnDef<ListResiduoPeligrosoManifiestos>[] = [
+export const columns: ColumnDef<ListEspecialManifiestos>[] = [
 
   //numero manifiesto
   {
@@ -24,10 +24,10 @@ export const columns: ColumnDef<ListResiduoPeligrosoManifiestos>[] = [
     header: "Residuos",
   },
 
-  //destino_final
+  //transportista
   {
-    accessorKey: "destino_final",
-    header: "Destino Final",
+    accessorKey: "transportista",
+    header: "Transportista",
   },
 
 
@@ -70,10 +70,11 @@ export const columns: ColumnDef<ListResiduoPeligrosoManifiestos>[] = [
 
     cell: ({ row, table }) => {
       const residuo = row.original
+      console.log({residuo})
       
       return (
         <Button
-          disabled={residuo.destino_final=="BRAVO ENERGY"}
+          disabled={residuo.transportista!="DESTINO FINAL"}
           variant="outline"
           className="bg-white font-bold text-azulito cursor-pointer p-4 h-12"
           size="sm"

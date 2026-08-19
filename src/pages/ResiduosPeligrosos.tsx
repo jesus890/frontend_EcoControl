@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react"
 
+//react-router
+import { useNavigate, useParams } from "react-router";
+
+//redux
+import { setLlenarCatalogos } from "@/provider/Slice/CatalogoSlice";
+import { useAppDispatch, useAppSelector } from "@/provider/app/hooks";
+
 import { CirclePlus } from "lucide-react"
 
 //card
@@ -57,8 +64,10 @@ import {
   listadoTipoGeneradorRP,
   listadoAutorizacionRP,
   listadoDestinoFinalRP,
-  crearReporteResiduosPeligroso,
+  crearResiduosPeligroso,
+  actualizarReporteResiduosPeligroso,
   listadoSubTipoResiduoRP,
+  buscarResiduosPeligroso,
 } from "../api/service"
 
 import { DialogResiduoPeligroso } from "@/components/dialog-residuo-peligroso"
@@ -67,37 +76,55 @@ import { toast } from "sonner"
 import { MessageCircleCheck } from "lucide-react"
 import { MessageCircleWarning } from "lucide-react"
 
+
 export function ResiduosPeligrosos() {
-  const [open, setOpen] = useState<boolean>(false)
-  const [materias, setMateria] = useState<CatalogoI[]>([])
-  const [tipoResiduo, setTipoResiduo] = useState<CatalogoI[]>([])
-  const [subTipoResiduo, setSubTipoResiduo] = useState<CatalogoI[]>([])
-  const [envases, setEnvases] = useState<CatalogoI[]>([])
-  const [generadores, setGeneradores] = useState<CatalogoI[]>([])
-  const [areas, setAreas] = useState<CatalogoI[]>([])
-  const [destinoFinal, setDestinoFinal] = useState<CatalogoI[]>([])
-  const [autorizacion, setAutorizacion] = useState<CatalogoI[]>([])
 
-  const [uuid, setUuid] = useState("")
+  const navigate = useNavigate();
 
-  const today = new Date()
+  const dispatch = useAppDispatch();
+
+  const { uuid } = useParams();
+
+  //catalogos
+  const stateCatalogos = useAppSelector((state) => state.CatalogoSeleccionados);
+  const materias =  stateCatalogos.agregacionmateria_rp;
+  const envases = stateCatalogos.envases_rp;
+  const generadores = stateCatalogos.generadores_rp;
+  const destinoFinal = stateCatalogos.destinofinal_rp;
+
+  const [open, setOpen] = useState<boolean>(false);
+
+  const [tipoResiduo, setTipoResiduo] = useState<CatalogoI[]>([]);
+  const [subTipoResiduo, setSubTipoResiduo] = useState<CatalogoI[]>([]);
+  const [areas, setAreas] = useState<CatalogoI[]>([]);
+  
+  const [autorizacion, setAutorizacion] = useState<CatalogoI[]>([]);
+
+  const [uuidGenerate, setuuidGenerate] = useState("");
+
+  const today = new Date();
 
   const todayString = `${today.getFullYear()}-${String(
     today.getMonth() + 1
   ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`
 
+
+  //generar el pdf
   const [dataPdf, setdataPdf] = useState<ResiduoPeligroPdfI>({
+    uuid: null,
     descMateria: "",
     descResiduo: "",
+    cantidad: 1,
+
     descSubTipoResiduo: "",
     descGenerador: "",
     descArea: "",
-    cantidad: 1,
+    
     fEntrada: todayString,
     fSalida: null,
-    uuid: null,
     numManifiesto: "",
   })
+
 
   //schema
   const schema = z.object({
@@ -128,7 +155,6 @@ export function ResiduosPeligrosos() {
     }),
 
     tipoAutorizacion: z.string().nullable(),
-
    
     tipoDestinoFinal: z.string().refine((val) => val !== null && val !== "", {
       message: "Selecciona un destino final",
@@ -164,21 +190,69 @@ export function ResiduosPeligrosos() {
     cargarCatalogos()
   }, [])
 
+  useEffect(() => {
+    if(uuid)
+    cargarDatos(uuid)
+  }, [uuid])
+
+ 
   //carga los diferentes catalogos que no dependen de otro
   const cargarCatalogos = async () => {
-    const [materia, envases, generadores, destinoFinal] = await Promise.all([
-      listadoAgregacionMateria(),
-      listadoTipoEnvasesRP(),
-      listadoTipoGeneradorRP(),
-      listadoDestinoFinalRP(),
-    ])
+    if(materias.length == 0 || envases.length == 0 || generadores.length == 0 || destinoFinal.length == 0)
+    {
+      
+      const [listMateria, listEnvases, listGeneradores, listDestinoFinal] = await Promise.all([
+        listadoAgregacionMateria(),
+        listadoTipoEnvasesRP(),
+        listadoTipoGeneradorRP(),
+        listadoDestinoFinalRP(),
+      ])
 
-    setMateria(materia.data)
-    setEnvases(envases.data)
-    setGeneradores(generadores.data)
-    setDestinoFinal(destinoFinal.data)
+      dispatch(setLlenarCatalogos({ catalogo: "agregacionmateria_rp", value: listMateria.data }));
+      dispatch(setLlenarCatalogos({ catalogo: "envases_rp", value: listEnvases.data }));
+      dispatch(setLlenarCatalogos({ catalogo: "generadores_rp", value: listGeneradores.data }));
+      dispatch(setLlenarCatalogos({ catalogo: "destinofinal_rp", value: listDestinoFinal.data }));
+    }
   }
 
+
+  //busca si existe un registro con el uuid, si existe carga los datos en el form
+  const cargarDatos = async (uuid: string) => {
+    
+    await buscarResiduosPeligroso(uuid).then((result) => {
+
+      if(result)
+      {
+        const dataToEdit = {
+          uuid: result.data.uuid,
+          descMateria: result.data.agregacion_materia?.descripcion || "",  //agregacion_materia
+          descResiduo: result.data.tipo_residuo?.descripcion || "",  //tipo_residuo
+          descSubTipoResiduo: result.data.subtipo_residuo?.descripcion || null,  //subtipo_residuo
+          cantidad: result.data.cantidad,
+          descEnvase:  result.data.tipo_envase?.descripcion || "",  //tipo_envase
+          descGenerador: result.data.tipo_generador?.descripcion || "",  //tipo_generador
+          descArea: result.data.area_generacion?.descripcion || "",  //area_generacion
+          descDestinoFinal: result.data.destino_final?.descripcion || "",  //destino_final
+          descAutorizacion: result.data.autorizacion?.descripcion || null,  //autorizacion
+          fEntrada: result.data.fecha_entrada,
+          fSalida: result.data.fecha_salida,
+        }
+
+        setuuidGenerate(dataToEdit.uuid);
+        form.setValue("tipoMateria", dataToEdit.descMateria);
+        form.setValue("tipoResiduo", dataToEdit.descResiduo);
+        form.setValue("subTipoResiduo", dataToEdit.descSubTipoResiduo);
+        form.setValue("cantidad", dataToEdit.cantidad);
+        form.setValue("tipoEnvase", dataToEdit.descEnvase);
+        form.setValue("tipoGenerador", dataToEdit.descGenerador);
+        form.setValue("tipoArea", dataToEdit.descArea);
+        form.setValue("tipoAutorizacion", dataToEdit.descArea);
+        form.setValue("tipoDestinoFinal", dataToEdit.descDestinoFinal);
+      }
+    })
+  }
+
+  
   //al seleccionar un tipo de materia, actualiza el listado de residuos acorde al primer filtro
   const materiaOnChange = async (value: string | null) => {
     if (value !== null) {
@@ -237,9 +311,11 @@ export function ResiduosPeligrosos() {
     }
   }
 
+  //guarda
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     try {
       const dataToSave = {
+        uuid : undefined,
         descMateria: data.tipoMateria,
         descResiduo: data.tipoResiduo,
         descSubTipoResiduo: data.subTipoResiduo,
@@ -252,7 +328,7 @@ export function ResiduosPeligrosos() {
         fEntrada: data.fEntrada,
       }
 
-      const result = await crearReporteResiduosPeligroso(dataToSave)
+      const result = await crearResiduosPeligroso(dataToSave)
       if (result) {
         toast(
           "El registro ha sido creado!", //sucess
@@ -262,7 +338,10 @@ export function ResiduosPeligrosos() {
           }
         )
 
-        setUuid(result.data.uuid)
+        console.log({result})
+        navigate(`/mml/environment/residuos-peligrosos/${result.data.uuid}`);
+        setuuidGenerate(result.data.uuid)
+
       }
     } catch (
       ex //error
@@ -277,6 +356,47 @@ export function ResiduosPeligrosos() {
     }
   }
 
+  //actualiza
+  const onEdit : SubmitHandler<FormValues> = async (data) => {
+    try {
+
+      const dataToSave = {
+        uuid : uuid?.toString(),
+        descMateria: data.tipoMateria,
+        descResiduo: data.tipoResiduo,
+        descSubTipoResiduo: data.subTipoResiduo,
+        cantidad: data.cantidad,
+        descEnvase: data.tipoEnvase,
+        descGenerador: data.tipoGenerador,
+        descArea: data.tipoArea,
+        descDestinoFinal: data.tipoDestinoFinal,
+        descAutorizacion: data.tipoAutorizacion,
+        fEntrada: data.fEntrada,
+      }
+
+      const result = await actualizarReporteResiduosPeligroso(dataToSave)
+      if (result) {
+        toast(
+          "El registro ha sido actulizado!", //sucess
+          {
+            icon: <MessageCircleCheck className="text-verdecito" />,
+            className: "bg-white !text-negrito !font-bold border !shadow-sm",
+          }
+        )
+      }
+    } catch (
+      ex //error
+    ) {
+      toast(
+        "Ocurrio un error, vaya esto es incomodo", //error
+        {
+          icon: <MessageCircleWarning className="text-rojito" />,
+          className: "bg-white !text-negrito !font-bold border !shadow-sm",
+        }
+      )
+    }
+  } 
+
   const previsualizarPDF = () => {
     const dataToGeneratePDF = {
       descMateria: String(values.tipoMateria),
@@ -288,7 +408,7 @@ export function ResiduosPeligrosos() {
       cantidad: values.cantidad,
       fEntrada: new Date(values.fEntrada),
       fSalida: null,
-      uuid: uuid ? uuid : null,
+      uuid: uuidGenerate ? uuidGenerate : null,
       numManifiesto: null,
     }
 
@@ -503,7 +623,9 @@ export function ResiduosPeligrosos() {
                         <Combobox
                           items={envases}
                           value={field.value ?? ""}
-                          onValueChange={(value) => field.onChange(value)}
+                          onValueChange={(value) => {
+                            field.onChange(value)
+                          }}
                         >
                           <ComboboxInput placeholder="Selecciona un envase..." />
 
@@ -802,11 +924,11 @@ export function ResiduosPeligrosos() {
               </FieldGroup>
 
               <Button
-                type="submit"
+                onClick={uuidGenerate ? form.handleSubmit(onEdit) : form.handleSubmit(onSubmit) }
                 className="mt-4 ml-4 cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
               >
                 <CirclePlus />
-                <span>Registrar Residuos</span>
+                <span>  { uuidGenerate ? 'Actualizar Residuo' : 'Registrar Residuo' }  </span>
               </Button>
 
               <Button

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react"
-import { columns } from "./columns"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { columns } from "./columns";
 import type { ListResiduoPeligroso } from "@/interfaces/interfaces"
 import { DataTable } from "./data-table"
 import { listadoResiduos } from "@/api/service"
@@ -10,7 +11,10 @@ import { DialogResiduoPeligroso } from "@/components/dialog-residuo-peligroso"
 import { DialogSolidoUrbano1 } from "@/components/dialog-solido-urbano-1";
 import { DialogSolidoUrbano2 } from "@/components/dialog-solido-urbano-2";
 
+
 export default function ListadoResiduos() {
+
+  const navigate = useNavigate();
 
   const [data, setData] = useState<ListResiduoPeligroso[]>([])
 
@@ -68,7 +72,6 @@ export default function ListadoResiduos() {
   const cargarListado = async () => {
     const result = await listadoResiduos()
     if (result) {
-       console.log(result.data);
       setData(result.data)
     }
   }
@@ -133,12 +136,25 @@ export default function ListadoResiduos() {
     }
   }
 
+  const editarResiduo = async(data: ListResiduoPeligroso) => {
+
+    if (data.tipo == "RP")
+    {
+      navigate(`/mml/environment/residuos-peligrosos/${data.uuid}`);
+    }
+    else 
+    {
+      navigate(`/mml/environment/manejo-especial/${data.uuid}`);
+    }   
+  }
+  
   return (
     <div>
       <DataTable
         columns={columns}
         data={data}
         abrirVistaPrevia={previsualizarPDF}
+        editarResiduo={editarResiduo}
       />
 
       <DialogResiduoPeligroso

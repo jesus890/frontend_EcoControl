@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
 
+
+//redux
+import { useAppSelector } from "@/provider/app/hooks";
+
+//react-router
+import { useParams , useNavigate } from 'react-router'; 
+
 //icons
 import { CirclePlus } from "lucide-react";
 import { Tag } from "lucide-react";
@@ -54,29 +61,26 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { CatalogoI, ResiduoSolido2PdfI } from "@/interfaces/interfaces";
 
-import {
-  listadoTipoGeneradorRSU_RME,
-  listadoAreaGeneraionRSU_RME,
-  listadoTipoResiduoRME,
-  listadoTipoTratamientoRME,
-  listadoTransportistasRME,
-  crearReporteRME
-} from "../api/service";
+import { listadoAreaGeneraionRSU_RME, crearResiduoRME, buscarResiduoRME, actualizarResiduoRME } from "../api/service";
 
+
+//RME
 export function SolidoUrbano2() {
+
+  const navigate = useNavigate();
+
+  const { uuid } = useParams();
 
   const [open, setOpen] = useState<boolean>(false)
 
-  const [generadores, setGeneradores] = useState<CatalogoI[]>([]);
+  //catalogos
+  const stateCatalogos = useAppSelector((state) => state.CatalogoSeleccionados);
+  const generadores = stateCatalogos.tipogenerador_su;
+  const residuos = stateCatalogos.tiporesiduo_rme;
+  const tratamientos = stateCatalogos.tipotratamiento_rme;
+  const transportistas = stateCatalogos.transportistas_rme;
   const [areas, setAreas] = useState<CatalogoI[]>([]);
-  const [residuos, setTipoResiduo] = useState<CatalogoI[]>([]);
-  const [tratamientos, setTipoTratamiento] = useState<CatalogoI[]>([]);
-  const [transportistas, setTipoTransportistas] = useState<CatalogoI[]>([]);
-
-  //botones
-  const [disablePreview, setDisablePreview] = useState<boolean>(true);
-  const [disableRegistrar, setDisableRegistrar] = useState<boolean>(false);
-
+  
   //dia actual
   const today = new Date()
   const todayString = `${today.getFullYear()}-${String(
@@ -95,8 +99,11 @@ export function SolidoUrbano2() {
     manifiesto: ""
   })
 
+  const [uuidGenerate, setuuidGenerate] = useState("");
+
   //schema
   const schema = z.object({
+
     tipoResiduo: z
       .string()
       .nullable()
@@ -138,12 +145,7 @@ export function SolidoUrbano2() {
         message: "Selecciona un tipo de tipo de tratamiento",
       }),
 
-    numero_folio: z
-      .string()
-      .nullable()
-      .refine((val) => val !== null && val !== "", {
-        message: "Selecciona un número de folio",
-      })
+    
   })
 
   type FormValues = z.infer<typeof schema>
@@ -152,7 +154,6 @@ export function SolidoUrbano2() {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      numero_folio: "",
       tipoResiduo: "",
       cantidad: 0,
       tipoGenerador: "",
@@ -167,24 +168,40 @@ export function SolidoUrbano2() {
   const values = form.watch()
 
   useEffect(() => {
-    cargarCatalogos()
-  }, [])
+    if(uuid)
+    cargarDatos(uuid)
+  }, [uuid])
 
-  //load catalogos
-  const cargarCatalogos = async () => {
-    const [residuos, generadores, tratamientos, transportistas] =
-      await Promise.all([
-        listadoTipoResiduoRME(),
-        listadoTipoGeneradorRSU_RME(),
-        listadoTipoTratamientoRME(),
-        listadoTransportistasRME(),
-      ])
-
-    setTipoResiduo(residuos.data)
-    setGeneradores(generadores.data)
-    setTipoTratamiento(tratamientos.data)
-    setTipoTransportistas(transportistas.data)
-  }
+    //busca si existe un registro con el uuid, si existe carga los datos en el form
+    const cargarDatos = async (uuid: string) => {
+    
+      await buscarResiduoRME(uuid).then((result) => {
+  
+        if(result)
+        {
+          const dataToEdit = {
+            uuid: result.data.uuid,
+            descResiduo: result.data.tipo_residuo?.descripcion || "",  //tipo_residuo
+            cantidad: result.data.cantidad,
+            descGenerador: result.data.tipo_generador?.descripcion || null,  //tipo_generador
+            descArea: result.data.area_generacion?.descripcion || null,  //area_generacion
+            fEntrada: result.data.fecha_entrada,
+            fSalida: result.data.fecha_salida,
+            descTratamiento: result.data.tipo_tratamiento?.descripcion || null, //tipo tratamiento
+            descTransportista: result.data.transportista?.descripcion || null //transportista
+          }
+  
+          setuuidGenerate(dataToEdit.uuid);
+          form.setValue("tipoResiduo", dataToEdit.descResiduo);
+          form.setValue("cantidad", dataToEdit.cantidad);
+          form.setValue("tipoGenerador", dataToEdit.descGenerador);
+          form.setValue("tipoArea", dataToEdit.descArea);
+          form.setValue("tipoTransportista", dataToEdit.descTransportista);
+          form.setValue("tipoTratamiento", dataToEdit.descTratamiento);
+        }
+      })
+    }
+  
 
   //al seleccionar un valor de generador , actualiza el listado de areas acorde al primer filtro
   const generadorOnChange = async (value: string | null) => {
@@ -201,11 +218,12 @@ export function SolidoUrbano2() {
     }
   }
 
+  //guarda la información
   const onSubmit: SubmitHandler<FormValues> = async(data) => {
     try
     {
       const dataToSave = {
-        numFolio: data.numero_folio,
+        uuid: undefined,
         descResiduo: data.tipoResiduo,
         cantidad: data.cantidad,
         descGenerador: data.tipoGenerador,
@@ -216,7 +234,10 @@ export function SolidoUrbano2() {
         descTransportista: data.tipoTransportista
       }
 
-      const result = await crearReporteRME(dataToSave);
+      const result = await crearResiduoRME(dataToSave);
+      console.log({result});
+      navigate(`/mml/environment/manejo-especial/${result.data.uuid}`);
+      setuuidGenerate(result.data.uuid)
 
       if(result)
       {
@@ -227,24 +248,6 @@ export function SolidoUrbano2() {
             className: "bg-white !text-negrito !font-bold border !shadow-sm",
           }
         )
-
-        //manda el preview
-        const dataToGeneratePDF = {
-          nombreResiduo: result.data.tipo_residuo?.descripcion,
-          descGenerador: result.data.tipo_generador?.descripcion,
-          descArea: result.data.area_generacion?.descripcion,
-          cantidad: values.cantidad,
-          fEntrada: values.fEntrada,
-          fSalida: null,
-          descTratamiento: result.data.tipo_tratamiento?.descripcion,
-          descTransportistas: result.data.transportista?.descripcion,
-          manifiesto: result.data.numero_manifiesto
-        }
-
-        setdataPdf(dataToGeneratePDF);
-
-        setDisablePreview(false);
-        setDisableRegistrar(true);
       }
     }
     catch(ex)
@@ -259,10 +262,64 @@ export function SolidoUrbano2() {
     }
   }
 
-  const previsualizarPDF = () => {
-    setOpen(true);
+  //actualiza la información
+  const onEdit: SubmitHandler<FormValues> = async(data) => {
+    try
+    {
+      const dataToSave = {
+        uuid: uuid?.toString(),
+        descResiduo: data.tipoResiduo,
+        cantidad: data.cantidad,
+        descGenerador: data.tipoGenerador,
+        descArea: data.tipoArea,
+        fEntrada: data.fEntrada,
+        fSalida: null,
+        descTratamiento: data.tipoTratamiento,
+        descTransportista: data.tipoTransportista
+      }
+
+      const result = await actualizarResiduoRME(dataToSave);
+
+      console.log("result", result);
+
+      if(result)
+      {
+        toast(
+          "El registro ha sido actualizado!", //sucess
+          {
+            icon: <MessageCircleCheck className="text-verdecito" />,
+            className: "bg-white !text-negrito !font-bold border !shadow-sm",
+          }
+        )
+      }
+    }
+    catch(ex)
+    {
+      toast(
+        "Ocurrio un error, vaya esto es incomodo", //error
+        {
+          icon: <MessageCircleWarning className="text-rojito" />,
+          className: "bg-white !text-negrito !font-bold border !shadow-sm",
+        }
+      )
+    }
   }
 
+ const previsualizarPDF = () => {
+    const dataToGeneratePDF = {
+      nombreResiduo: String(values.tipoResiduo),
+      descGenerador: String(values.tipoGenerador),
+      descArea: String(values.tipoArea),
+      cantidad: values.cantidad,
+      fEntrada: values.fEntrada,
+      fSalida: values.fEntrada,
+      descTratamiento: String(values.tipoTratamiento),
+      descTransportistas: String(values.tipoTransportista),
+      manifiesto : ""
+    }
+    setdataPdf(dataToGeneratePDF);
+    setOpen(true);
+  }
   return (
     <div className="p-5">
       <Card tabIndex={0} className="h-[70vh] w-full shadow-md">
@@ -270,42 +327,7 @@ export function SolidoUrbano2() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
               
-              {/* Numero de folio */}
-              <Controller
-                name="numero_folio"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel
-                      htmlFor="numero_folio"
-                      className="text-[13px] font-bold text-negrito"
-                    >
-                      Número de Folio
-                    </FieldLabel>
-
-                    <Input
-                      id="numero_folio"
-                      placeholder="Número de folio"
-                      className="placeholder:text-placeholder"
-                      value={field.value ?? ""}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        field.onChange(value === "" ? "" : value)
-                      }}
-                    />
-
-                    {fieldState.error && (
-                      <FieldError className="text-rojito">
-                        {fieldState.error.message}
-                      </FieldError>
-                    )}
-                  </Field>
-                )}
-              />
-
+            
               {/* Tipo del residuo */}
               <Controller
                 name="tipoResiduo"
@@ -651,16 +673,14 @@ export function SolidoUrbano2() {
             </FieldGroup>
 
             <Button
-              type="submit"
-              disabled={disableRegistrar}
+              onClick={uuidGenerate ? form.handleSubmit(onEdit) : form.handleSubmit(onSubmit) }
               className="mt-4 ml-4 cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
             >
               <CirclePlus />
-              <span>Registrar Sólido urbano</span>
+               <span>  { uuidGenerate ? 'Actualizar Sólido Urbano' : 'Registrar Sólido Urbano' }  </span>
             </Button>
 
             <Button
-              disabled={disablePreview}
               onClick={form.handleSubmit(previsualizarPDF)}
               className="mt-4 ml-4 cursor-pointer p-4 hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
             >

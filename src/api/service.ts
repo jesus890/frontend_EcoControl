@@ -12,7 +12,8 @@ import type {
   ILogin,
   IRestorePassword,
   IRestore2Password,
-  IForgotPassword
+  IForgotPassword,
+  ManifiestoEspecialPDF
 } from "@/interfaces/interfaces"
 
 /* 
@@ -105,21 +106,45 @@ export const listadoAreaGeneracionMEGeneral = () =>
     M   A   N   E   J   O          E   S   P   E   C   I   A   L   
 */
 
-//crea pdf
+//crea el pdf rsu 
 export const generarReporteRSU = (values: ResiduoSolido1PdfI) =>
   apiRequest<any>(axiosAuth.post("/generarReporteRSU", values))
 
-//crea pdf
+//crea el pdf rme
 export const generarReporteRME = (values: ResiduoSolido2PdfI) =>
   apiRequest<any>(axiosAuth.post("/generarReporteRME", values))
 
-//guarda registro
-export const crearReporteRSU = (values: ResiduoSolidoSave1I) =>
-  apiRequest<any>(axiosAuth.post("/crearReporteRSU", values))
+//guarda registro RSU
+export const crearResiduoRSU = (values: ResiduoSolidoSave1I) =>
+  apiRequest<any>(axiosAuth.post("/crearResiduoRSU", values))
 
-//guarda registro
-export const crearReporteRME = (values: ResiduoSolidoSave2I) =>
-  apiRequest<any>(axiosAuth.post("/crearReporteRME", values))
+//busca residuo RSU
+export const buscarResiduoRSU = (uuid: string) =>
+  apiRequest<any>(axiosAuth.post("/buscarResiduoRSU", { uuid }))
+
+//actualiza residuo RSU
+export const actualizaResiduoRSU = (values: ResiduoSolidoSave1I) =>
+  apiRequest<any>(axiosAuth.post("/actualizarResiduoRSU", values))
+
+
+//guarda registro RME
+export const crearResiduoRME = (values: ResiduoSolidoSave2I) =>
+  apiRequest<any>(axiosAuth.post("/crearResiduoRME", values))
+
+
+//busca residuo RME
+export const buscarResiduoRME = (uuid: string) =>
+  apiRequest<any>(axiosAuth.post("/buscarResiduoRME", { uuid }))
+
+//actualiza residuo RME
+export const actualizarResiduoRME = (values: ResiduoSolidoSave2I) =>
+  apiRequest<any>(axiosAuth.post("/actualizarResiduoRME", values))
+
+
+
+
+
+
 
 //estadisticas de barras
 export const crearEstadisticoRSU = (values: ResiduoFiltroEstadistica) =>
@@ -137,6 +162,13 @@ export const crearEstadisticoRME = (values: ResiduoFiltroEstadistica) =>
 export const creaReporteListadoRME = (values: ResiduoFiltroEstadistica) =>
   apiRequest<any>(axiosAuth.post("/reporteListadoEspecialRME", values))
 
+export const listadoEspecialesManifiesto = () =>
+  apiRequest<any>(axiosAuth.post("/reporteListadoEspecialManifiesto", {}))
+
+//PDF
+export const generarReporteManifiestoME = (values: ManifiestoEspecialPDF) =>
+  apiRequest<any>(axiosAuth.post("/generarReporteManifiestoME", values))
+
 
 
 
@@ -152,12 +184,18 @@ export const generarReporteResiduoPeligroso = (values: ResiduoPeligroPdfI) =>
 export const generarReporteManifiestoRP = (values: ManifiestoPeligrosoPDF) =>
   apiRequest<any>(axiosAuth.post("/generarReporteManifiestoRP", values))
 
-  
-
 
 //Guarda
-export const crearReporteResiduosPeligroso = (values: ResiduoPeligroSaveI) =>
-  apiRequest<any>(axiosAuth.post("/crearReporteResiduosPeligroso", values))
+export const crearResiduosPeligroso = (values: ResiduoPeligroSaveI) =>
+  apiRequest<any>(axiosAuth.post("/crearResiduosPeligroso", values))
+
+//busca
+export const buscarResiduosPeligroso = (uuid: string) =>
+  apiRequest<any>(axiosAuth.post("/buscarResiduoPeligroso", { uuid }))
+
+//actualiza
+export const actualizarReporteResiduosPeligroso = (values: ResiduoPeligroSaveI) =>
+  apiRequest<any>(axiosAuth.post("/actualizarReporte", values))
 
 //modulo de trazabilidad (cuando se escanea el QR)
 export const crearSalidaResiduos = (folio: string, manifiesto_independiente: boolean) =>

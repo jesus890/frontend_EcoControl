@@ -7,19 +7,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import type { ReporteI, ManifiestoPeligrosoPDF } from "@/interfaces/interfaces"
-import { generarReporteManifiestoRP } from "../api/service"
+import type { ReporteI, ManifiestoEspecialPDF } from "@/interfaces/interfaces"
+import {  generarReporteManifiestoME } from "../api/service"
 import { ArrowBigDownDash } from "lucide-react"
 import { Loader } from "lucide-react"
 import { Printer } from "lucide-react"
 
 interface PropI {
-  data: ManifiestoPeligrosoPDF
+  data: ManifiestoEspecialPDF
   open: boolean
   setOpen: (prev: boolean) => void
 }
 
-export function DialogResiduoPeligrosoManfiesto({
+export function DialogResiduoManfiestoEspecial({
   data,
   open,
   setOpen,
@@ -32,7 +32,7 @@ export function DialogResiduoPeligrosoManfiesto({
   }, [open])
 
   const getReporte = async () => {
-    const result = await generarReporteManifiestoRP(data)
+    const result = await generarReporteManifiestoME(data)
     setReporteData(result.data)
   }
 

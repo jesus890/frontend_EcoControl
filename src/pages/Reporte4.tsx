@@ -1,11 +1,13 @@
 //Tabs
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 //card
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card";
 
 //listado
-import ListadoRPManifiestos from "@/app/residuosRPManifiestos/page"
+import ListadoRPManifiestos from "@/app/residuosRPManifiestos/page";
+import ListadoEspecialManifiestos from "@/app/especialManifiestos/page";
+
 
 export function Reporte4() {
   return (
@@ -29,7 +31,7 @@ export function Reporte4() {
             </TabsContent>
 
             <TabsContent value="listado2">
-              <ListadoRPManifiestos />
+              <ListadoEspecialManifiestos />
             </TabsContent>
 
           </Tabs>

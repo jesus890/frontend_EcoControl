@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react"
 
+//redux
+import { useAppSelector } from "@/provider/app/hooks";
+
+//react-router
+import { useParams, useNavigate } from 'react-router'; 
+
 //icons
 import { CirclePlus } from "lucide-react"
 import { Tag } from "lucide-react"
@@ -54,29 +60,25 @@ import { zodResolver } from "@hookform/resolvers/zod"
 
 import type { CatalogoI, ResiduoSolido1PdfI } from "@/interfaces/interfaces"
 
-import { crearReporteRSU } from "../api/service";
+import { listadoAreaGeneraionRSU_RME, crearResiduoRSU, buscarResiduoRSU, actualizaResiduoRSU } from "../api/service"
 
-import {
-  listadoTipoResiduoRSU,
-  listadoTipoGeneradorRSU_RME,
-  listadoAreaGeneraionRSU_RME,
-  listadoDestinoFinalRSU,
-} from "../api/service"
-
+//RSU
 export function SolidoUrbano1() {
+ 
+  const navigate = useNavigate();
 
-  const [open, setOpen] = useState<boolean>(false)
+  const { uuid } = useParams();
 
   //catalogos
-  const [generadores, setGeneradores] = useState<CatalogoI[]>([]);
+  const stateCatalogos = useAppSelector((state) => state.CatalogoSeleccionados);
+  const generadores = stateCatalogos.tipogenerador_su;
+  const residuos = stateCatalogos.tiporesiduo_rsu;
+  const destinoFinal = stateCatalogos.destinofinal_rsu;
   const [areas, setAreas] = useState<CatalogoI[]>([]);
-  const [residuos, setTipoResiduo] = useState<CatalogoI[]>([]);
-  const [destinoFinal, setDestinoFinal] = useState<CatalogoI[]>([]);
+    
+  const [open, setOpen] = useState<boolean>(false)
 
-  //botones
-  const [disablePreview, setDisablePreview] = useState<boolean>(true);
-  const [disableRegistrar, setDisableRegistrar] = useState<boolean>(false);
-
+  
   //dia actual
   const today = new Date()
   const todayString = `${today.getFullYear()}-${String(
@@ -91,7 +93,9 @@ export function SolidoUrbano1() {
     fEntrada: todayString,
     fSalida: todayString,
     descDestinoFinal: "",
-  })
+  });
+
+  const [uuidGenerate, setuuidGenerate] = useState("");
 
   //schema
   const schema = z.object({
@@ -149,25 +153,39 @@ export function SolidoUrbano1() {
     mode: "onBlur",
   })
 
-  const values = form.watch()
+  const values = form.watch();
 
   useEffect(() => {
-    cargarCatalogos()
-  }, [])
+    if(uuid)
+    cargarDatos(uuid)
+  }, [uuid])
 
-  //carga los diferentes catalogos que no dependen de otro
-  const cargarCatalogos = async () => {
-    const [generadores, residuos, destinoFinal] = await Promise.all([
-      listadoTipoGeneradorRSU_RME(),
-      listadoTipoResiduoRSU(),
-      listadoDestinoFinalRSU(),
-    ])
+  //busca si existe un registro con el uuid, si existe carga los datos en el form
+  const cargarDatos = async (uuid: string) => {
+  
+    await buscarResiduoRSU(uuid).then((result) => {
 
-    console.log({ generadores })
+      if(result)
+      {
+        const dataToEdit = {
+          uuid: result.data.uuid,
+          descResiduo: result.data.tipo_residuo?.descripcion || "",  //tipo_residuo
+          cantidad: result.data.cantidad,
+          descGenerador: result.data.tipo_generador?.descripcion || null,  //tipo_generador
+          descArea: result.data.area_generacion?.descripcion || null,  //area_generacion
+          descDestinoFinal: result.data.destino_final?.descripcion || "",  //destino_final
+          fEntrada: result.data.fecha_entrada,
+          fSalida: result.data.fecha_salida,
+        }
 
-    setGeneradores(generadores.data)
-    setTipoResiduo(residuos.data)
-    setDestinoFinal(destinoFinal.data)
+        setuuidGenerate(dataToEdit.uuid);
+        form.setValue("tipoResiduo", dataToEdit.descResiduo);
+        form.setValue("cantidad", dataToEdit.cantidad);
+        form.setValue("tipoGenerador", dataToEdit.descGenerador);
+        form.setValue("tipoArea", dataToEdit.descArea);
+        form.setValue("tipoDestinoFinal", dataToEdit.descDestinoFinal);
+      }
+    })
   }
 
   //al seleccionar un valor de generador , actualiza el listado de areas acorde al primer filtro
@@ -190,6 +208,7 @@ export function SolidoUrbano1() {
     try
     {
       const dataToSave = {
+        uuid: undefined,
         descResiduo: data.tipoResiduo,
         cantidad: data.cantidad,
         descGenerador: data.tipoGenerador,
@@ -199,7 +218,7 @@ export function SolidoUrbano1() {
         descDestinoFinal: data.tipoDestinoFinal
       }
 
-      const result = await crearReporteRSU(dataToSave);
+      const result = await crearResiduoRSU(dataToSave);
 
       if(result)
       {
@@ -211,21 +230,50 @@ export function SolidoUrbano1() {
           }
         )
 
-        //manda el preview
-        const dataToGeneratePDF = {
-          nombreResiduo: result.data.tipo_residuo?.descripcion,
-          descGenerador: result.data.tipo_generador?.descripcion,
-          descArea: result.data.area_generacion?.descripcion,
-          cantidad: values.cantidad,
-          fEntrada: values.fEntrada,
-          fSalida: values.fEntrada,
-          descDestinoFinal: result.data.destino_final?.descripcion,
+        console.log({result});
+        navigate(`/mml/environment/manejo-especial/${result.data.uuid}`);
+        setuuidGenerate(result.data.uuid)
+
+      }
+    }
+    catch(ex)
+    {
+      toast(
+        "Ocurrio un error, vaya esto es incomodo", //error
+        {
+          icon: <MessageCircleWarning className="text-rojito" />,
+          className: "bg-white !text-negrito !font-bold border !shadow-sm",
         }
+      )
+    }
+  }
 
-        setdataPdf(dataToGeneratePDF);
+  //actualiza la información
+  const onEdit: SubmitHandler<FormValues> = async(data) => {
+    try
+    {
+      const dataToSave = {
+        uuid: uuid?.toString(),
+        descResiduo: data.tipoResiduo,
+        cantidad: data.cantidad,
+        descGenerador: data.tipoGenerador,
+        descArea: data.tipoArea,
+        fEntrada: data.fEntrada,
+        fSalida: data.fSalida,
+        descDestinoFinal: data.tipoDestinoFinal
+      }
 
-        setDisablePreview(false);
-        setDisableRegistrar(true);
+      const result = await actualizaResiduoRSU(dataToSave);
+
+      if(result)
+      {
+        toast(
+          "El registro ha sido actualizado!", //sucess
+          {
+            icon: <MessageCircleCheck className="text-verdecito" />,
+            className: "bg-white !text-negrito !font-bold border !shadow-sm",
+          }
+        )
       }
     }
     catch(ex)
@@ -241,7 +289,17 @@ export function SolidoUrbano1() {
   }
 
   const previsualizarPDF = () => {
-    setOpen(true)
+    const dataToGeneratePDF = {
+      nombreResiduo: String(values.tipoResiduo),
+      descGenerador: String(values.tipoGenerador),
+      descArea: String(values.tipoArea),
+      cantidad: values.cantidad,
+      fEntrada: values.fEntrada,
+      fSalida: values.fEntrada,
+      descDestinoFinal: String(values.tipoDestinoFinal),
+    }
+    setdataPdf(dataToGeneratePDF);
+    setOpen(true);
   }
 
   return (
@@ -619,16 +677,14 @@ export function SolidoUrbano1() {
             </FieldGroup>
 
             <Button
-              type="submit"
-              disabled={disableRegistrar}
+              onClick={uuidGenerate ? form.handleSubmit(onEdit) : form.handleSubmit(onSubmit) }
               className="mt-4 ml-4 cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
             >
               <CirclePlus />
-              <span>Registrar Sólido urbano</span>
+              <span>  { uuidGenerate ? 'Actualizar Sólido Urbano' : 'Registrar Sólido Urbano' }  </span>
             </Button>
 
             <Button
-              disabled={disablePreview}
               onClick={form.handleSubmit(previsualizarPDF)}
               className="mt-4 ml-4 cursor-pointer p-4 hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
             >

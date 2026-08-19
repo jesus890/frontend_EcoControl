@@ -10,6 +10,24 @@ export interface CatalogoSimple {
     descripcion: string;
 }
 
+export interface ListadoCatalogosI {
+  tiporesiduo_rsu : CatalogoI[],
+  tipogenerador_su : CatalogoI[],
+  destinofinal_rsu : CatalogoI[],
+
+  transportistas_rme : CatalogoI[],
+  tipotratamiento_rme : CatalogoI[],
+  tiporesiduo_rme : CatalogoI[],
+
+  agregacionmateria_rp: CatalogoI[],
+  envases_rp: CatalogoI[],
+  generadores_rp: CatalogoI[],
+  destinofinal_rp: CatalogoI[],
+}
+
+
+
+
 export interface ReporteI {
     photo_blob: string;
     pdf_blob: string;
@@ -50,6 +68,7 @@ export interface ResiduoSolido2PdfI {
 }
 
 export interface ResiduoSolidoSave1I {
+    uuid: string|undefined,
     descResiduo: String|null,
     cantidad: Number,
     descGenerador: String|null,
@@ -60,7 +79,7 @@ export interface ResiduoSolidoSave1I {
 }
 
 export interface ResiduoSolidoSave2I {
-    numFolio: String|null,
+    uuid: string|undefined,
     descResiduo: String|null,
     cantidad: Number,
     descGenerador: String|null,
@@ -74,9 +93,8 @@ export interface ResiduoSolidoSave2I {
 
 
 //Residuos Peligrosos 
-
 export interface ResiduoPeligroSaveI {
-    descMateria: string,
+    uuid: string|undefined,
     descResiduo: string,
     descSubTipoResiduo: string|null,
     cantidad: number,
@@ -87,7 +105,6 @@ export interface ResiduoPeligroSaveI {
     descAutorizacion: string|null,
     fEntrada: string;
 }
-
 
 export interface ResiduoPeligroPdfI {
     descMateria: string,
@@ -124,12 +141,6 @@ export interface ListResiduoPeligroso {
     fecha_entrada: Date;
     fecha_salida: Date;
 }
-
-
-
-
-
-
 
 
 
@@ -194,6 +205,13 @@ export interface ListResiduoPeligrosoManifiestos {
   ffecha_salida: string;
 }
 
+export interface ListEspecialManifiestos {
+  numero_manifiesto: string;
+  transportista: string;
+  nombre_residuos: string;
+  fecha_salida: Date;
+  ffecha_salida: string;
+}
 
 export interface ManifiestoPeligrosoPDF {
   destino_final: string;
@@ -203,6 +221,13 @@ export interface ManifiestoPeligrosoPDF {
   responsable_recepcion: string;
 }
 
+
+export interface ManifiestoEspecialPDF {
+  numero_manifiesto: string;
+  transportista: number;
+  num_placa: string;
+  responsable_recepcion: string;
+}
 
 export interface ILogin {
   email: string;
