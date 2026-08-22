@@ -215,6 +215,14 @@ export const creaReporteListadoPeligroso = (values: ResiduoFiltroEstadistica) =>
 export const listadoResiduos = () =>
   apiRequest<any>(axiosAuth.post("/listado_residuos", {}))
 
+
+//listado de bitacora
+export const listadoBitacora = () =>
+  apiRequest<any>(axiosAuth.post("/listado_bitacora", {}))
+
+
+
+
 export const obtenerTotalResiduos = () =>
   apiRequest<any>(axiosAuth.post("/obtener_total_residuos", {}))
 

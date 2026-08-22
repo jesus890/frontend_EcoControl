@@ -18,6 +18,7 @@ import {
   FileSearchCorner,
   Users,
   Cog,
+  ScrollText
 } from "lucide-react"
 
 import mml from "@/assets/mml.png"
@@ -35,7 +36,7 @@ export function AppSidebar({ profile }: Props) {
     const rol = Number(profile.rol)
     let deshabilitado = false;
 
-    if(modulo == "trazabilidad" || modulo == "reportes" || modulo == "usuarios")
+    if(modulo == "trazabilidad" || modulo == "reportes" || modulo == "usuarios" )
     {
       if(rol > 2)
       {
@@ -78,6 +79,12 @@ export function AppSidebar({ profile }: Props) {
       url: "/mml/environment/reportes",
       icon: ChartArea,
       habilitado : getAcceso("reportes")
+    },
+    {
+      title: "Bitácora",
+      url: "/mml/environment/bitacora",
+      icon: ScrollText,
+      habilitado : getAcceso("bitacora")
     },
     {
       title: "Usuarios",

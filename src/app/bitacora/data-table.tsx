@@ -1,0 +1,213 @@
+"use client"
+
+import { useState } from "react"
+
+import type {
+  ColumnDef,
+  SortingState,
+  ColumnFiltersState,
+  FilterFn,
+} from "@tanstack/react-table"
+
+import {
+
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  getPaginationRowModel, //paginacion
+  getSortedRowModel, //ordenamiento
+  getFilteredRowModel, //buscador
+} from "@tanstack/react-table";
+
+import { Input } from "@/components/ui/input";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import { Button } from "@/components/ui/button";
+
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
+
+}
+
+const cretibColumnIds = new Set([
+  "cretib_c",
+  "cretib_r",
+  "cretib_e",
+  "cretib_t",
+  "cretib_i",
+  "cretib_b",
+  "cretib_m",
+])
+
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+}: DataTableProps<TData, TValue>) {
+
+  const [sorting, setSorting] = useState<SortingState>([]) //ordenamiento
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]) //buscador
+  const [globalFilter, setGlobalFilter] = useState("");
+
+  const globalFilterFn: FilterFn<any> = (row, _, value) => {
+    const search = value.toLowerCase();
+
+    return [
+      row.getValue("uuid"),
+      row.getValue("tipo_residuo"),
+      row.getValue("numero_folio"),
+    ]
+      .some(
+        (val) =>
+          String(val ?? "")
+            .toLowerCase()
+            .includes(search)
+      );
+  };
+
+  const table = useReactTable({
+    data,
+    columns,
+
+    getCoreRowModel: getCoreRowModel(),
+
+    getPaginationRowModel: getPaginationRowModel(),
+
+    onSortingChange: setSorting,
+
+    getSortedRowModel: getSortedRowModel(),
+
+    state: {
+      sorting,
+      columnFilters,
+      globalFilter
+    },
+
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn,
+
+    onColumnFiltersChange: setColumnFilters,
+
+    getFilteredRowModel: getFilteredRowModel(),
+
+  })
+
+
+  return (
+    <div className="overflow-hidden rounded-md border">
+
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Filtrar..."
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className="max-w-sm ml-4"
+        />
+      </div>
+
+      <Table>
+
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+
+            <TableRow key={headerGroup.id}>
+
+              {headerGroup.headers.map((header) => (
+
+                <TableHead
+                  key={header.id}
+                  className={cretibColumnIds.has(header.column.id) ? "border" : undefined}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </TableHead>
+
+              ))}
+
+            </TableRow>
+
+          ))}
+        </TableHeader>
+
+        <TableBody>
+
+          {table.getRowModel().rows?.length ? (
+
+            table.getRowModel().rows.map((row) => (
+
+              <TableRow key={row.id} className="bg-white">
+
+                {row.getVisibleCells().map((cell) => (
+
+                  <TableCell
+                    key={cell.id}
+                    className={cretibColumnIds.has(cell.column.id) ? "border" : undefined}
+                  >
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
+                  </TableCell>
+
+                ))}
+
+              </TableRow>
+
+            ))
+
+          ) : (
+
+            <TableRow>
+
+              <TableCell
+                colSpan={columns.length}
+                className="h-24 text-center"
+              >
+                No hay resultados.
+              </TableCell>
+
+            </TableRow>
+
+          )}
+
+        </TableBody>
+
+      </Table>
+
+      <div className="flex items-center justify-end space-x-2 p-4">
+        <Button
+          variant="outline"
+          className="bg-azulito hover:bg-[#5D86A6] hover:text-white focus:bg-[#5D86A6] focus:outline-none text-white font-bold"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Anterior
+        </Button>
+
+        <Button
+          variant="outline"
+          className="bg-azulito hover:bg-[#5D86A6] hover:text-white focus:bg-[#5D86A6] focus:outline-none text-white font-bold"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Siguiente
+        </Button>
+      </div>
+
+    </div>
+  )
+}

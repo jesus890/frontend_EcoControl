@@ -143,6 +143,43 @@ export interface ListResiduoPeligroso {
 }
 
 
+export interface ListBitacora {
+    id: number;
+    uuid: string;
+    numero_folio: string;
+    tipo_residuo: CatalogoSimple;
+    subtipo_residuo: CatalogoSimple | null;
+    cantidad: number;
+    tipo_envase: CatalogoSimple | null;
+    cretib_c: string;
+    cretib_r: string;
+    cretib_e: string;
+    cretib_t: string;
+    cretib_i: string;
+    cretib_b: string;
+    cretib_m: string;
+    fase_siguiente: string;
+
+
+
+
+
+    tipo_generador: CatalogoSimple;
+    area_generacion: CatalogoSimple;
+    numero_manifiesto: string;
+
+    destino_final: CatalogoSimple | null;
+    transportista: CatalogoSimple | null;
+    tipo_tratamiento: CatalogoSimple | null;
+
+    tipo: string;
+    ffecha_entrada: string;
+    ffecha_salida: string;
+    fecha_entrada: Date;
+    fecha_salida: Date;
+}
+
+
 
 //Listado de estadisticas graficas
 export interface ResiduoPeligrosoEstadistica {

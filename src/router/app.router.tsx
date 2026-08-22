@@ -11,6 +11,7 @@ import ResiduosPeligrosos from "@/pages/ResiduosPeligrosos";
 import ManejoEspecial from "@/pages/ManejoEspecial";
 import Trazabilidad from "@/pages/Trazabilidad";
 import Reportes from "@/pages/Reportes";
+import Bitacora from "@/pages/Bitacora";
 import NotFound from "@/pages/NotFound";
 
 export const appRouter = createBrowserRouter([
@@ -66,6 +67,11 @@ export const appRouter = createBrowserRouter([
                 path: "reportes",
                 element: <Reportes />,
             },
+            {
+                path: "bitacora",
+                element: <Bitacora />,
+            },
+
         ],
     },
 
