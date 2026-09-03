@@ -94,17 +94,24 @@ export interface ResiduoSolidoSave2I {
 
 //Residuos Peligrosos 
 export interface ResiduoPeligroSaveI {
-    uuid: string|undefined,
-    descResiduo: string,
-    descSubTipoResiduo: string|null,
-    cantidad: number,
-    descEnvase: string,
-    descGenerador: string,
-    descArea: string,
-    descDestinoFinal: string|null,
-    descAutorizacion: string|null,
-    fEntrada: string;
+  uuid: string|undefined,
+  descResiduo: string,
+  descSubTipoResiduo: string|null,
+  cantidad: number,
+  descEnvase: string,
+  descGenerador: string,
+  descArea: string,
+  descDestinoFinal: string|null,
+  descAutorizacion: string|null,
+  fEntrada: string;
 }
+
+//Residuo Peligroso actualizar
+export interface ResiduoPeligroComentariosSaveI {
+  uuid: string|undefined,
+  comentarios: string
+}
+
 
 export interface ResiduoPeligroPdfI {
     descMateria: string,
@@ -159,6 +166,7 @@ export interface ListBitacora {
     cretib_b: string;
     cretib_m: string;
     fase_siguiente: string;
+    comentarios?: string;
 
 
 

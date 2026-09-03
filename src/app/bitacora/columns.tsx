@@ -1,9 +1,55 @@
 import type { ColumnDef } from "@tanstack/react-table"
+import { useEffect, useRef, useState } from "react"
 import type { ListBitacora } from "@/interfaces/interfaces"
 import { ArrowUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 
-export const columns: ColumnDef<ListBitacora>[] = [
+export type ComentariosChangeHandler = (uuid: string, comentarios: string) => void
+
+const COMENTARIOS_DEBOUNCE_MS = 700
+
+interface ComentariosTextareaProps {
+  uuid: string
+  initialValue: string
+  onComentariosChange: ComentariosChangeHandler
+}
+
+function ComentariosTextarea({
+  uuid,
+  initialValue,
+  onComentariosChange,
+}: ComentariosTextareaProps) {
+  const [value, setValue] = useState(initialValue)
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      onComentariosChange(uuid, value)
+    }, COMENTARIOS_DEBOUNCE_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [uuid, value, onComentariosChange])
+
+  return (
+    <Textarea
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+      placeholder="Escribe un comentario..."
+      aria-label={`Comentarios de la bitácora ${uuid}`}
+      className="min-h-20 min-w-64 resize-y whitespace-normal"
+    />
+  )
+}
+
+export const createColumns = (
+  onComentariosChange: ComentariosChangeHandler
+): ColumnDef<ListBitacora>[] => [
   //uuid
   {
     accessorKey: "uuid",
@@ -182,8 +228,16 @@ export const columns: ColumnDef<ListBitacora>[] = [
     header: "NÚMERO DE MANIFIESTO",
   },
 
-
-
-
-  
+  //comentarios editables, identificados por el uuid de la bitácora
+  {
+    accessorKey: "comentarios",
+    header: "Comentarios",
+    cell: ({ row }) => (
+      <ComentariosTextarea
+        uuid={row.original.uuid}
+        initialValue={row.original.comentarios ?? ""}
+        onComentariosChange={onComentariosChange}
+      />
+    ),
+  },
 ]

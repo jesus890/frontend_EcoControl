@@ -1,16 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState } from "react";
 
 import type {
   ColumnDef,
   SortingState,
   ColumnFiltersState,
   FilterFn,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
+
+//icons
+import { ImageDown } from "lucide-react";
 
 import {
-
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -32,6 +34,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 
+//xlsx
+import * as XLSX from "xlsx"
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -47,6 +52,15 @@ const cretibColumnIds = new Set([
   "cretib_b",
   "cretib_m",
 ])
+
+const exportarExcel = <T,>(data: T[]) => {
+  const timestamp = Date.now();
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
+  XLSX.writeFile(workbook, `bitacora${timestamp}.xlsx`);
+};
+
 
 export function DataTable<TData, TValue>({
   columns,
@@ -111,6 +125,13 @@ export function DataTable<TData, TValue>({
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm ml-4"
         />
+        <Button
+          onClick={()=> exportarExcel(data)}
+          className="ml-4 cursor-pointer p-4 hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
+        >
+          <ImageDown />
+              <span>Exportar</span>
+            </Button>
       </div>
 
       <Table>

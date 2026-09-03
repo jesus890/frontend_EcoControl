@@ -13,7 +13,8 @@ import type {
   IRestorePassword,
   IRestore2Password,
   IForgotPassword,
-  ManifiestoEspecialPDF
+  ManifiestoEspecialPDF,
+  ResiduoPeligroComentariosSaveI
 } from "@/interfaces/interfaces"
 
 /* 
@@ -196,6 +197,11 @@ export const buscarResiduosPeligroso = (uuid: string) =>
 //actualiza
 export const actualizarReporteResiduosPeligroso = (values: ResiduoPeligroSaveI) =>
   apiRequest<any>(axiosAuth.post("/actualizarReporte", values))
+
+//actualiza comentarios
+export const actualizaComentariosReporte = (values: ResiduoPeligroComentariosSaveI) =>
+  apiRequest<any>(axiosAuth.post("/actualizarComentarios", values))
+
 
 //modulo de trazabilidad (cuando se escanea el QR)
 export const crearSalidaResiduos = (folio: string, manifiesto_independiente: boolean) =>

@@ -69,9 +69,7 @@ export const columns: ColumnDef<ListEspecialManifiestos>[] = [
     header: "Acciones",
 
     cell: ({ row, table }) => {
-      const residuo = row.original
-      console.log({residuo})
-      
+      const residuo = row.original      
       return (
         <Button
           disabled={residuo.transportista!="DESTINO FINAL"}

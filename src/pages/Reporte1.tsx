@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react"
+import { Check, ChevronsUpDown, CalendarIcon, Award } from "lucide-react"
 
 //utilidades
 import { cn } from "@/lib/utils"
@@ -415,6 +415,7 @@ export function Reporte1() {
   }
 
   const cargarListado = async () => {
+
     const result = await creaReporteListadoPeligroso(filtros)
     if (result) {
       setData(result.data)

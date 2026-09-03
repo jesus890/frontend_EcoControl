@@ -28,12 +28,6 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
     accessorKey: "uuid",
     header: "Código",
   },
-  //folio
-  {
-    accessorFn: (row) => row.numero_folio,
-    id: "numero_folio",
-    header: "Número Folio",
-  },
   //nombre residuo
   {
     accessorFn: (row) => row.tipo_residuo?.descripcion,
