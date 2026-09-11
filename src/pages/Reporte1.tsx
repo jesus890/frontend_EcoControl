@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { Check, ChevronsUpDown, CalendarIcon, Award } from "lucide-react"
+import { Check, ChevronsUpDown, CalendarIcon } from "lucide-react"
 
 //utilidades
 import { cn } from "@/lib/utils"
