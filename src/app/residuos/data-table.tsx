@@ -117,7 +117,7 @@ export function DataTable<TData, TValue>({
         />
       </div>
 
-      <Table>
+      <Table className="">
 
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -148,15 +148,19 @@ export function DataTable<TData, TValue>({
 
             table.getRowModel().rows.map((row) => (
 
-              <TableRow key={row.id} className="bg-white">
+              <TableRow key={row.id} className="bg-white " >
 
                 {row.getVisibleCells().map((cell) => (
 
-                  <TableCell key={cell.id}>
+                  <TableCell
+                    key={cell.id}
+                    className="max-w-[300px] whitespace-normal break-words text-justify"
+                  >
                     {flexRender(
                       cell.column.columnDef.cell,
                       cell.getContext()
                     )}
+                    
                   </TableCell>
 
                 ))}

@@ -91,7 +91,7 @@ export const createColumns = (
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Nombre Residuo
+          Tipo Envase
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )

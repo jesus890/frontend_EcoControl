@@ -37,10 +37,21 @@ import { Button } from "@/components/ui/button";
 //xlsx
 import * as XLSX from "xlsx"
 
-interface DataTableProps<TData, TValue> {
+// interface DataTableProps<TData, TValue> {
+//   columns: ColumnDef<TData, TValue>[]
+//   data: TData[]
+
+// }
+
+interface DataTableProps<
+  TData extends Record<string, any>,
+  TValue
+> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
 
+  // abrirVistaPrevia: (row: TData) => void
+  // editarResiduo: (row: TData) => void
 }
 
 const cretibColumnIds = new Set([
@@ -53,18 +64,66 @@ const cretibColumnIds = new Set([
   "cretib_m",
 ])
 
-const exportarExcel = <T,>(data: T[]) => {
+const exportarExcel = <T extends Record<string, any>>(data: T[]) => {
+
+  const dataExportar = data.map((item) => ({
+    "Código": item.uuid ?? "",
+    "Nombre Residuo": item.tipo_residuo?.descripcion ?? "",
+    "Cantidad": item.cantidad ?? "",
+    "Tipo Envase": item.tipo_envase?.descripcion ?? "",
+    "C": item.cretib_c ?? "",
+    "R": item.cretib_r ?? "",
+    "E": item.cretib_e ?? "",
+    "T": item.cretib_t ?? "",
+    "I": item.cretib_i ?? "",
+    "B": item.cretib_b ?? "",
+    "M": item.cretib_m ?? "",
+    "Generador": item.tipo_generador?.descripcion ?? "",
+    "Area": item.area_generacion?.descripcion ?? "",
+
+    "Fecha Entrada": item.fecha_entrada ? new Date(item.fecha_entrada).toLocaleDateString("es-MX", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }) : "",
+
+    "Fecha Salida": item.fecha_salida ? new Date(item.fecha_salida).toLocaleDateString("es-MX", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }) : "",
+
+    "FASE DE MANEJO SIGUIENTE A LA SALIDA DEL ALMACÉN" : item.fase_manejo_siguiente ?? "",
+    "NÚMERO DE MANIFIESTO" : item.numero_manifiesto ?? "",
+    "COMENTARIOS" : item.comentarios ?? "",
+
+  }));
+
   const timestamp = Date.now();
-  const worksheet = XLSX.utils.json_to_sheet(data);
+
+  const worksheet = XLSX.utils.json_to_sheet(dataExportar);
+
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Datos");
-  XLSX.writeFile(workbook, `bitacora${timestamp}.xlsx`);
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Datos"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    `bitacora${timestamp}.xlsx`
+  );
 };
 
 
-export function DataTable<TData, TValue>({
+export function DataTable<
+  TData extends Record<string, any>,
+  TValue
+>({
   columns,
-  data,
+  data
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = useState<SortingState>([]) //ordenamiento
