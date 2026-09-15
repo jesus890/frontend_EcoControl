@@ -43,6 +43,10 @@ interface DataTableProps<TData, TValue> {
   editarResiduo: (
     row: TData
   ) => void
+
+  solicitarEliminarResiduo: (
+    row: TData
+  ) => void
   
 }
 
@@ -50,7 +54,8 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   abrirVistaPrevia,
-  editarResiduo
+  editarResiduo,
+  solicitarEliminarResiduo
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = useState<SortingState>([]) //ordenamiento
@@ -100,7 +105,8 @@ export function DataTable<TData, TValue>({
 
     meta: {
       abrirVistaPrevia,
-      editarResiduo
+      editarResiduo,
+      solicitarEliminarResiduo
     },
   })
 

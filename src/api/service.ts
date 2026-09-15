@@ -103,6 +103,7 @@ export const listadoTransportistasRME = () =>
 export const listadoAreaGeneracionMEGeneral = () =>
   apiRequest<any>(axiosAuth.post("/listado_me_areageneracion_general", {}))
 
+
 /* 
     M   A   N   E   J   O          E   S   P   E   C   I   A   L   
 */
@@ -140,10 +141,6 @@ export const buscarResiduoRME = (uuid: string) =>
 //actualiza residuo RME
 export const actualizarResiduoRME = (values: ResiduoSolidoSave2I) =>
   apiRequest<any>(axiosAuth.post("/actualizarResiduoRME", values))
-
-
-
-
 
 
 
@@ -197,6 +194,11 @@ export const buscarResiduosPeligroso = (uuid: string) =>
 //actualiza
 export const actualizarReporteResiduosPeligroso = (values: ResiduoPeligroSaveI) =>
   apiRequest<any>(axiosAuth.post("/actualizarReporte", values))
+
+//elimina residuo peligroso o manejo especial
+export const eliminarResiduo = (uuid: string) =>
+  apiRequest<any>(axiosAuth.post("/eliminarReporte", { uuid }))
+
 
 //actualiza comentarios
 export const actualizaComentariosReporte = (values: ResiduoPeligroComentariosSaveI) =>

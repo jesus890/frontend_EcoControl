@@ -12,6 +12,10 @@ declare module "@tanstack/react-table" {
       row: TData
     ) => void
 
+    solicitarEliminarResiduo?: (
+      row: TData
+    ) => void
+
   }
 
 }

@@ -3,7 +3,19 @@ import { useNavigate } from "react-router";
 import { columns } from "./columns";
 import type { ListResiduoPeligroso } from "@/interfaces/interfaces"
 import { DataTable } from "./data-table"
-import { listadoResiduos } from "@/api/service"
+import { eliminarResiduo, listadoResiduos } from "@/api/service"
+import { toast } from "sonner"
+import { Trash2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 import type { ResiduoPeligroPdfI , ResiduoSolido1PdfI, ResiduoSolido2PdfI} from "@/interfaces/interfaces"
 
@@ -22,6 +34,8 @@ export default function ListadoResiduos() {
   const [openRP, setOpenRP] = useState(false);
   const [openRSU, setOpenRSU] = useState(false);
   const [openRME, setOpenRME] = useState(false);
+  const [residuoAEliminar, setResiduoAEliminar] = useState<ListResiduoPeligroso | null>(null);
+  const [eliminando, setEliminando] = useState(false);
 
   const inicializarVariablesRP = {
     descMateria: "",
@@ -147,6 +161,27 @@ export default function ListadoResiduos() {
       navigate(`/mml/environment/manejo-especial/${data.uuid}`);
     }   
   }
+
+  const confirmarEliminacion = async () => {
+    if (!residuoAEliminar || eliminando) return
+
+    setEliminando(true)
+
+    try {
+      await eliminarResiduo(residuoAEliminar.uuid)
+      setData((residuos) =>
+        residuos.filter((residuo) => residuo.uuid !== residuoAEliminar.uuid)
+      )
+      setResiduoAEliminar(null)
+      toast.success("El residuo se eliminó correctamente")
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "No fue posible eliminar el residuo"
+      )
+    } finally {
+      setEliminando(false)
+    }
+  }
   
   return (
     <div>
@@ -155,7 +190,39 @@ export default function ListadoResiduos() {
         data={data}
         abrirVistaPrevia={previsualizarPDF}
         editarResiduo={editarResiduo}
+        solicitarEliminarResiduo={setResiduoAEliminar}
       />
+
+      <Dialog
+        open={residuoAEliminar !== null}
+        onOpenChange={(open) => {
+          if (!open && !eliminando) setResiduoAEliminar(null)
+        }}
+      >
+        <DialogContent showCloseButton={!eliminando}>
+          <DialogHeader>
+            <DialogTitle>¿Eliminar este residuo?</DialogTitle>
+            <DialogDescription>
+              Se eliminará el registro {residuoAEliminar?.uuid}. Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose
+              render={<Button variant="outline" disabled={eliminando} />}
+            >
+              Cancelar
+            </DialogClose>
+            <Button
+              variant="destructive"
+              disabled={eliminando}
+              onClick={confirmarEliminacion}
+            >
+              <Trash2 />
+              {eliminando ? "Eliminando..." : "Sí, eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <DialogResiduoPeligroso
         open={openRP}

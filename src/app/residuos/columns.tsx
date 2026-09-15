@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table"
 import type { ListResiduoPeligroso } from "@/interfaces/interfaces"
-import { ArrowUpDown, Pencil } from "lucide-react"
+import { ArrowUpDown, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tag } from "lucide-react"
@@ -159,6 +159,14 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
             <DropdownMenuItem onClick={() => table.options.meta?.editarResiduo?.(residuo)}>
               <span className="mt-1 mx-auto">Editar</span>
               <Pencil className="text-azulito mt-1"/>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => table.options.meta?.solicitarEliminarResiduo?.(residuo)}
+              className="text-destructive focus:text-destructive"
+            >
+              <span className="mt-1 mx-auto">Eliminar</span>
+              <Trash2 className="mt-1" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
