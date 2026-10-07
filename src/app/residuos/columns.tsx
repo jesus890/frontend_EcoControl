@@ -76,6 +76,13 @@ export const columns: ColumnDef<ListResiduoPeligroso>[] = [
       )
     },
   },
+
+  //tipo_movimiento
+  {
+    accessorKey: "tipo_desc_movimiento",
+    header: "Tipo Movimiento"
+  },
+
   //fecha entrada
   {
     //define que valor usa la tabla internamente

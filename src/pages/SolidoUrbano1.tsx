@@ -21,6 +21,9 @@ import {
   FieldError,
 } from "@/components/ui/field"
 
+//texArea
+import { Textarea } from "@/components/ui/textarea"
+
 //popover
 import {
   Popover,
@@ -105,7 +108,7 @@ export function SolidoUrbano1() {
     cantidad: 1,
     fEntrada: todayString,
     fSalida: todayString,
-    descDestinoFinal: "",
+    descDestinoFinal: ""
   });
 
   const [uuidGenerate, setuuidGenerate] = useState("");
@@ -147,6 +150,8 @@ export function SolidoUrbano1() {
     fEntrada: z.string().min(1, "Fecha requerida"),
 
     fSalida: z.string().min(1, "Fecha requerida"),
+
+    comentarios: z.string().optional()
   })
 
   type FormValues = z.infer<typeof schema>
@@ -162,6 +167,7 @@ export function SolidoUrbano1() {
       fEntrada: todayString,
       fSalida: todayString,
       tipoDestinoFinal: "",
+      comentarios: ""
     },
     mode: "onBlur",
   })
@@ -180,6 +186,7 @@ export function SolidoUrbano1() {
 
       if(result)
       {
+       
         const dataToEdit = {
           uuid: result.data.uuid,
           descResiduo: result.data.tipo_residuo?.descripcion || "",  //tipo_residuo
@@ -189,6 +196,7 @@ export function SolidoUrbano1() {
           descDestinoFinal: result.data.destino_final?.descripcion || "",  //destino_final
           fEntrada: normalizarFechaFormulario(result.data.fecha_entrada),
           fSalida: result.data.fecha_salida,
+          comentarios: result.data.comentarios
         }
 
         setuuidGenerate(dataToEdit.uuid);
@@ -198,6 +206,7 @@ export function SolidoUrbano1() {
         form.setValue("tipoArea", dataToEdit.descArea);
         form.setValue("tipoDestinoFinal", dataToEdit.descDestinoFinal);
         form.setValue("fEntrada", dataToEdit.fEntrada);
+        form.setValue("comentarios", dataToEdit.comentarios);
       }
     })
   }
@@ -229,7 +238,8 @@ export function SolidoUrbano1() {
         descArea: data.tipoArea,
         fEntrada: data.fEntrada,
         fSalida: data.fSalida,
-        descDestinoFinal: data.tipoDestinoFinal
+        descDestinoFinal: data.tipoDestinoFinal,
+        comentarios: data.comentarios
       }
 
       const result = await crearResiduoRSU(dataToSave);
@@ -274,7 +284,8 @@ export function SolidoUrbano1() {
         descArea: data.tipoArea,
         fEntrada: data.fEntrada,
         fSalida: data.fSalida,
-        descDestinoFinal: data.tipoDestinoFinal
+        descDestinoFinal: data.tipoDestinoFinal,
+        comentarios : data.comentarios
       }
 
       const result = await actualizaResiduoRSU(dataToSave);
@@ -688,6 +699,46 @@ export function SolidoUrbano1() {
                   )
                 }}
               />
+
+              {/* Comentarios */}
+              <Controller
+                name="comentarios"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel
+                      htmlFor="Comentarios"
+                      className="text-[13px] font-bold text-negrito"
+                    >
+                      Comentarios
+                    </FieldLabel>
+
+                    <Textarea
+                      id="comentarios"
+                      placeholder="Escriba sus comentarios ..."
+                      className="placeholder:text-placeholder"
+                      value={field.value ?? ""}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        field.onChange(value)
+                      }}
+                    />
+
+                    {fieldState.error && (
+                      <FieldError className="text-rojito">
+                        {fieldState.error.message}
+                      </FieldError>
+                    )}
+                  </Field>
+                )}
+              />
+
+
+
+
             </FieldGroup>
 
             <Button

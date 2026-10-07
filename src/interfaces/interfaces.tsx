@@ -76,6 +76,7 @@ export interface ResiduoSolidoSave1I {
     fEntrada: String;
     fSalida: String;
     descDestinoFinal: String|null; 
+    comentarios: string|undefined;
 }
 
 export interface ResiduoSolidoSave2I {
@@ -88,6 +89,8 @@ export interface ResiduoSolidoSave2I {
     fSalida: String|null;
     descTratamiento: String|null;
     descTransportista: String|null; 
+    comentarios: string|undefined;
+    tipoMovimiento: "1" | "2";
 }
 
 

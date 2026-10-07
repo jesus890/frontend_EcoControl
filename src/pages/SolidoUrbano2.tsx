@@ -22,6 +22,9 @@ import {
   FieldError,
 } from "@/components/ui/field";
 
+//texArea
+import { Textarea } from "@/components/ui/textarea"
+
 //popover
 import {
   Popover,
@@ -50,8 +53,10 @@ import { MessageCircleWarning } from "lucide-react";
 //calendar
 import { Calendar } from "@/components/ui/calendar";
 
+//form controls
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormRadioGroup } from "@/components/FormRadioGroup";
 
 //validaciones y forms
 import { useForm, Controller } from "react-hook-form";
@@ -59,7 +64,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import type { CatalogoI, ResiduoSolido2PdfI } from "@/interfaces/interfaces";
+import type { CatalogoI, ResiduoSolido2PdfI, ResiduoSolidoSave2I } from "@/interfaces/interfaces";
 
 import { listadoAreaGeneraionRSU_RME, crearResiduoRME, buscarResiduoRME, actualizarResiduoRME } from "../api/service";
 
@@ -117,6 +122,12 @@ export function SolidoUrbano2() {
 
   const [uuidGenerate, setuuidGenerate] = useState("");
 
+  const movimientoOptions = [
+    { label: "Entrada", value: "1" },
+    { label: "Salida", value: "2" },
+  ];
+
+
   //schema
   const schema = z.object({
 
@@ -160,14 +171,17 @@ export function SolidoUrbano2() {
         message: "Selecciona un tipo de tipo de transportista",
       }),
 
+    comentarios: z.string().optional(),
+    tipoMovimiento: z.enum(["1", "2"], {
+      error: "Seleccione un tipo de movimiento",
+    }),
+
     tipoTratamiento: z
       .string()
       .nullable()
       .refine((val) => val !== null && val !== "", {
         message: "Selecciona un tipo de tipo de tratamiento",
       }),
-
-    
   })
 
   type FormValues = z.infer<typeof schema>
@@ -183,7 +197,8 @@ export function SolidoUrbano2() {
       fEntrada: todayString,
       fSalida: requiereFechaSalida ? "" : null,
       tipoTransportista: "",
-      tipoTratamiento: ""
+      tipoTratamiento: "",
+      comentarios: "",
     },
     mode: "onBlur",
   })
@@ -211,7 +226,9 @@ export function SolidoUrbano2() {
             fEntrada: normalizarFechaFormulario(result.data.fecha_entrada),
             fSalida: normalizarFechaFormulario(result.data.fecha_salida),
             descTratamiento: result.data.tipo_tratamiento?.descripcion || null, //tipo tratamiento
-            descTransportista: result.data.transportista?.descripcion || null //transportista
+            descTransportista: result.data.transportista?.descripcion || null, //transportista
+            comentarios: result.data.comentarios,
+            tipoMovimiento: String(result.data.tipo_movimiento ?? result.data.tipoMovimiento ?? "")
           }
 
           console.log({dataToEdit})
@@ -228,6 +245,12 @@ export function SolidoUrbano2() {
           );
           form.setValue("tipoTransportista", dataToEdit.descTransportista);
           form.setValue("tipoTratamiento", dataToEdit.descTratamiento);
+          form.setValue("comentarios", dataToEdit.comentarios);
+          if (dataToEdit.tipoMovimiento === "1" || dataToEdit.tipoMovimiento === "2") {
+            form.setValue("tipoMovimiento", dataToEdit.tipoMovimiento);
+          } else {
+            form.resetField("tipoMovimiento");
+          }
         }
       })
     }
@@ -252,7 +275,7 @@ export function SolidoUrbano2() {
   const onSubmit: SubmitHandler<FormValues> = async(data) => {
     try
     {
-      const dataToSave = {
+      const dataToSave: ResiduoSolidoSave2I = {
         uuid: undefined,
         descResiduo: data.tipoResiduo,
         cantidad: data.cantidad,
@@ -261,7 +284,9 @@ export function SolidoUrbano2() {
         fEntrada: data.fEntrada,
         fSalida: requiereFechaSalida ? data.fSalida : null,
         descTratamiento: data.tipoTratamiento,
-        descTransportista: data.tipoTransportista
+        descTransportista: data.tipoTransportista,
+        comentarios: data.comentarios,
+        tipoMovimiento: data.tipoMovimiento
       }
 
       console.log({dataToSave})
@@ -298,7 +323,7 @@ export function SolidoUrbano2() {
   const onEdit: SubmitHandler<FormValues> = async(data) => {
     try
     {
-      const dataToSave = {
+      const dataToSave: ResiduoSolidoSave2I = {
         uuid: uuid?.toString(),
         descResiduo: data.tipoResiduo,
         cantidad: data.cantidad,
@@ -307,7 +332,9 @@ export function SolidoUrbano2() {
         fEntrada: data.fEntrada,
         fSalida: requiereFechaSalida ? data.fSalida : null,
         descTratamiento: data.tipoTratamiento,
-        descTransportista: data.tipoTransportista
+        descTransportista: data.tipoTransportista,
+        comentarios: data.comentarios,
+        tipoMovimiento: data.tipoMovimiento
       }
 
       const result = await actualizarResiduoRME(dataToSave);
@@ -356,9 +383,17 @@ export function SolidoUrbano2() {
     <div className="p-5">
       <Card tabIndex={0} className="h-[70vh] w-full shadow-md">
         <CardContent>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(uuidGenerate ? onEdit : onSubmit)}>
             <FieldGroup className="mx-auto grid grid-cols-1 gap-5 p-4 md:grid-cols-3">
               
+              {/* Tipo de movimiento */}
+              <FormRadioGroup
+                name="tipoMovimiento"
+                control={form.control}
+                label="Tipo de Movimiento"
+                orientation="horizontal"
+                options={movimientoOptions}
+              />
             
               {/* Tipo del residuo */}
               <Controller
@@ -780,10 +815,46 @@ export function SolidoUrbano2() {
                 }}
               />
 
+              {/* Comentarios */}
+              <Controller
+                name="comentarios"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel
+                      htmlFor="Comentarios"
+                      className="text-[13px] font-bold text-negrito"
+                    >
+                      Comentarios
+                    </FieldLabel>
+
+                    <Textarea
+                      id="comentarios"
+                      placeholder="Escriba sus comentarios ..."
+                      className="placeholder:text-placeholder"
+                      value={field.value ?? ""}
+                      onBlur={field.onBlur}
+                      name={field.name}
+                      ref={field.ref}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        field.onChange(value)
+                      }}
+                    />
+
+                    {fieldState.error && (
+                      <FieldError className="text-rojito">
+                        {fieldState.error.message}
+                      </FieldError>
+                    )}
+                  </Field>
+                )}
+              />
+
             </FieldGroup>
 
             <Button
-              onClick={uuidGenerate ? form.handleSubmit(onEdit) : form.handleSubmit(onSubmit) }
+              type="submit"
               className="mt-4 ml-4 cursor-pointer bg-[#239954] p-4 hover:bg-[#52BE80] focus:bg-[#52BE80] focus:outline-none"
             >
               <CirclePlus />
@@ -791,6 +862,7 @@ export function SolidoUrbano2() {
             </Button>
 
             <Button
+              type="button"
               onClick={form.handleSubmit(previsualizarPDF)}
               className="mt-4 ml-4 cursor-pointer p-4 hover:bg-[#5D86A6] focus:bg-[#5D86A6] focus:outline-none"
             >
