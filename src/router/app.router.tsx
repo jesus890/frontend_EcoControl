@@ -14,6 +14,28 @@ import Reportes from "@/pages/Reportes";
 import Bitacora from "@/pages/Bitacora";
 import NotFound from "@/pages/NotFound";
 
+import { Navigate } from "react-router";
+
+
+interface RouteGuardProps {
+    children: React.ReactNode;
+}
+
+function RouteGuard({ children }: RouteGuardProps) {
+    const sesion = JSON.parse(localStorage.getItem('sesionIniciada') || '{}');
+
+    let enabled = true ;
+
+    sesion?.rol === 3 ? enabled = false : enabled;
+
+    if (!enabled) {
+        return <Navigate to="/mml/environment" replace />;
+    }
+
+    return children;
+}
+
+
 export const appRouter = createBrowserRouter([
 
     {
@@ -59,17 +81,30 @@ export const appRouter = createBrowserRouter([
                 path: "manejo-especial/:uuid",
                 element: <ManejoEspecial />,
             },
+
             {
                 path: "trazabilidad",
-                element: <Trazabilidad />,
+                element: (
+                    <RouteGuard >
+                        <Trazabilidad />
+                    </RouteGuard>
+                )
             },
             {
                 path: "reportes",
-                element: <Reportes />,
+                element: (
+                    <RouteGuard >
+                        <Reportes />
+                    </RouteGuard>
+                )
             },
             {
                 path: "bitacora",
-                element: <Bitacora />,
+                element: (
+                    <RouteGuard >
+                        <Bitacora />
+                    </RouteGuard>
+                )
             },
 
         ],

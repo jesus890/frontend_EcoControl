@@ -31,19 +31,25 @@ type Props = {
 export function AppSidebar({ profile }: Props) {
 
   
+  /*optiene el acceso de rol 
+  1 = Super Administrador
+  2 = Administrador
+  3 = Almacen 
+      *No podrá ver Trazabilidad
+      *No podrá ver Reportes
+      *No podrá ver Bitácora
+      *No podrá ver Usuarios.
+  */
   const getAcceso = (modulo : string) => {
 
     const rol = Number(profile.rol)
     let deshabilitado = false;
 
-    if(modulo == "trazabilidad" || modulo == "reportes" || modulo == "usuarios" )
+    if((modulo == "trazabilidad" || modulo == "reportes" || modulo == "usuarios" ) && rol == 3)
     {
-      if(rol > 2)
-      {
-        deshabilitado = true;
-      }
+      deshabilitado = true; 
     }
-  
+
     return deshabilitado
 
   }

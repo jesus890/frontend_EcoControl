@@ -62,6 +62,19 @@ import type { CatalogoI, ResiduoSolido1PdfI } from "@/interfaces/interfaces"
 
 import { listadoAreaGeneraionRSU_RME, crearResiduoRSU, buscarResiduoRSU, actualizaResiduoRSU } from "../api/service"
 
+// El formulario y Calendar trabajan con yyyy-mm-dd; la interfaz lo presenta como dd/mm/yyyy.
+const normalizarFechaFormulario = (fecha: string | null | undefined) => {
+  if (!fecha) return ""
+
+  const fechaIso = fecha.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (fechaIso) return `${fechaIso[1]}-${fechaIso[2]}-${fechaIso[3]}`
+
+  const fechaVisual = fecha.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+  if (fechaVisual) return `${fechaVisual[3]}-${fechaVisual[2]}-${fechaVisual[1]}`
+
+  return ""
+}
+
 //RSU
 export function SolidoUrbano1() {
  
@@ -174,7 +187,7 @@ export function SolidoUrbano1() {
           descGenerador: result.data.tipo_generador?.descripcion || null,  //tipo_generador
           descArea: result.data.area_generacion?.descripcion || null,  //area_generacion
           descDestinoFinal: result.data.destino_final?.descripcion || "",  //destino_final
-          fEntrada: result.data.fecha_entrada,
+          fEntrada: normalizarFechaFormulario(result.data.fecha_entrada),
           fSalida: result.data.fecha_salida,
         }
 
@@ -184,6 +197,7 @@ export function SolidoUrbano1() {
         form.setValue("tipoGenerador", dataToEdit.descGenerador);
         form.setValue("tipoArea", dataToEdit.descArea);
         form.setValue("tipoDestinoFinal", dataToEdit.descDestinoFinal);
+        form.setValue("fEntrada", dataToEdit.fEntrada);
       }
     })
   }

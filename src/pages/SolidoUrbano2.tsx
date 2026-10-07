@@ -63,6 +63,19 @@ import type { CatalogoI, ResiduoSolido2PdfI } from "@/interfaces/interfaces";
 
 import { listadoAreaGeneraionRSU_RME, crearResiduoRME, buscarResiduoRME, actualizarResiduoRME } from "../api/service";
 
+// El formulario y Calendar trabajan con yyyy-mm-dd; la interfaz lo presenta como dd/mm/yyyy.
+const normalizarFechaFormulario = (fecha: string | null | undefined) => {
+  if (!fecha) return ""
+
+  const fechaIso = fecha.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (fechaIso) return `${fechaIso[1]}-${fechaIso[2]}-${fechaIso[3]}`
+
+  const fechaVisual = fecha.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+  if (fechaVisual) return `${fechaVisual[3]}-${fechaVisual[2]}-${fechaVisual[1]}`
+
+  return ""
+}
+
 
 //RME
 export function SolidoUrbano2() {
@@ -70,6 +83,9 @@ export function SolidoUrbano2() {
   const navigate = useNavigate();
 
   const { uuid } = useParams();
+
+  const sesion = JSON.parse(localStorage.getItem("sesionIniciada") || "{}")
+  const requiereFechaSalida = [1, 2].includes(Number(sesion.rol))
 
   const [open, setOpen] = useState<boolean>(false)
 
@@ -131,6 +147,12 @@ export function SolidoUrbano2() {
 
     fEntrada: z.string().min(1, "Fecha requerida"),
 
+    fSalida: requiereFechaSalida
+      ? z
+        .string()
+        .min(1, "Fecha requerida")
+      : z.string().nullable(),
+
     tipoTransportista: z
       .string()
       .nullable()
@@ -159,6 +181,7 @@ export function SolidoUrbano2() {
       tipoGenerador: "",
       tipoArea: "",
       fEntrada: todayString,
+      fSalida: requiereFechaSalida ? "" : null,
       tipoTransportista: "",
       tipoTratamiento: ""
     },
@@ -185,17 +208,24 @@ export function SolidoUrbano2() {
             cantidad: result.data.cantidad,
             descGenerador: result.data.tipo_generador?.descripcion || null,  //tipo_generador
             descArea: result.data.area_generacion?.descripcion || null,  //area_generacion
-            fEntrada: result.data.fecha_entrada,
-            fSalida: result.data.fecha_salida,
+            fEntrada: normalizarFechaFormulario(result.data.fecha_entrada),
+            fSalida: normalizarFechaFormulario(result.data.fecha_salida),
             descTratamiento: result.data.tipo_tratamiento?.descripcion || null, //tipo tratamiento
             descTransportista: result.data.transportista?.descripcion || null //transportista
           }
+
+          console.log({dataToEdit})
   
           setuuidGenerate(dataToEdit.uuid);
           form.setValue("tipoResiduo", dataToEdit.descResiduo);
           form.setValue("cantidad", dataToEdit.cantidad);
           form.setValue("tipoGenerador", dataToEdit.descGenerador);
           form.setValue("tipoArea", dataToEdit.descArea);
+          form.setValue("fEntrada", dataToEdit.fEntrada);
+          form.setValue(
+            "fSalida",
+            requiereFechaSalida ? (dataToEdit.fSalida || "") : null
+          );
           form.setValue("tipoTransportista", dataToEdit.descTransportista);
           form.setValue("tipoTratamiento", dataToEdit.descTratamiento);
         }
@@ -229,13 +259,15 @@ export function SolidoUrbano2() {
         descGenerador: data.tipoGenerador,
         descArea: data.tipoArea,
         fEntrada: data.fEntrada,
-        fSalida: null,
+        fSalida: requiereFechaSalida ? data.fSalida : null,
         descTratamiento: data.tipoTratamiento,
         descTransportista: data.tipoTransportista
       }
 
+      console.log({dataToSave})
+
       const result = await crearResiduoRME(dataToSave);
-      console.log({result});
+
       navigate(`/mml/environment/manejo-especial/${result.data.uuid}`);
       setuuidGenerate(result.data.uuid)
 
@@ -273,7 +305,7 @@ export function SolidoUrbano2() {
         descGenerador: data.tipoGenerador,
         descArea: data.tipoArea,
         fEntrada: data.fEntrada,
-        fSalida: null,
+        fSalida: requiereFechaSalida ? data.fSalida : null,
         descTratamiento: data.tipoTratamiento,
         descTransportista: data.tipoTransportista
       }
@@ -312,7 +344,7 @@ export function SolidoUrbano2() {
       descArea: String(values.tipoArea),
       cantidad: values.cantidad,
       fEntrada: values.fEntrada,
-      fSalida: values.fEntrada,
+      fSalida: requiereFechaSalida ? values.fSalida : null,
       descTratamiento: String(values.tipoTratamiento),
       descTransportistas: String(values.tipoTransportista),
       manifiesto : ""
@@ -576,6 +608,84 @@ export function SolidoUrbano2() {
                   </Field>
                 )}
               />
+
+              {/* Fecha de salida: visible únicamente para los roles 1 y 2 */}
+              {requiereFechaSalida && (
+                <Controller
+                name="fSalida"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel
+                      htmlFor="fSalida"
+                      className="text-[13px] font-bold text-negrito"
+                    >
+                      Fecha de Salida *
+                    </FieldLabel>
+
+                    <Popover>
+                      <PopoverTrigger >
+                        <div
+                          className="h-8 w-full cursor-pointer rounded-lg border border-input bg-transparent px-2.5 py-1 text-left text-base text-placeholder transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm"
+                          aria-invalid={fieldState.invalid}
+                        >
+                          {field.value
+                            ? (() => {
+                                const [year, month, day] =
+                                  field.value.split("-")
+
+                                return `${day}/${month}/${year}`
+                              })()
+                            : "Selecciona una fecha ..."}
+                        </div>
+                      </PopoverTrigger>
+
+                      <PopoverContent
+                        className="w-auto overflow-hidden p-0"
+                        align="start"
+                      >
+                        <Calendar
+                          mode="single"
+                          disabled={(date) => {
+                            const inicioHoy = new Date()
+                            inicioHoy.setHours(0, 0, 0, 0)
+                            return date <= inicioHoy
+                          }}
+                          selected={
+                            field.value
+                              ? new Date(field.value + "T00:00:00")
+                              : undefined
+                          }
+                          defaultMonth={
+                            field.value
+                              ? new Date(field.value + "T00:00:00")
+                              : new Date()
+                          }
+                          captionLayout="dropdown"
+                          onSelect={(date) => {
+                            if (!date) return
+
+                            const formatted = `${date.getFullYear()}-${String(
+                              date.getMonth() + 1
+                            ).padStart(2, "0")}-${String(
+                              date.getDate()
+                            ).padStart(2, "0")}`
+
+                            field.onChange(formatted)
+                          }}
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    {fieldState.error && (
+                      <FieldError className="text-rojito">
+                        {fieldState.error.message}
+                      </FieldError>
+                    )}
+                  </Field>
+                )}
+                />
+              )}
 
               
               {/* Tratamientos */}
