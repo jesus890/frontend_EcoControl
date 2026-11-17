@@ -131,7 +131,7 @@ export default function Layout() {
         </div>
 
         <div className="w-full">
-          <Outlet />
+          <Outlet context={profile} />
         </div>
       </SidebarInset>
 

@@ -12,29 +12,23 @@ import ManejoEspecial from "@/pages/ManejoEspecial";
 import Trazabilidad from "@/pages/Trazabilidad";
 import Reportes from "@/pages/Reportes";
 import Bitacora from "@/pages/Bitacora";
+import Usuarios from "@/pages/Usuarios";
 import NotFound from "@/pages/NotFound";
 
-import { Navigate } from "react-router";
+import { Navigate, useOutletContext } from "react-router";
+import { puedeAcceder, type ModuloRestringido } from "@/lib/access";
+import type { IUser } from "@/interfaces/interfaces";
 
 
-interface RouteGuardProps {
-    children: React.ReactNode;
-}
+function RouteGuard({ children, modulo }: { children: React.ReactNode; modulo: ModuloRestringido }) {
+    const profile = useOutletContext<IUser>();
 
-function RouteGuard({ children }: RouteGuardProps) {
-    const sesion = JSON.parse(localStorage.getItem('sesionIniciada') || '{}');
-
-    let enabled = true ;
-
-    sesion?.rol === 3 ? enabled = false : enabled;
-
-    if (!enabled) {
-        return <Navigate to="/mml/environment" replace />;
-    }
+    if (!localStorage.getItem("token")) return <Navigate to="/login" replace />;
+    if (!profile?.id) return <p className="p-6" role="status">Verificando acceso…</p>;
+    if (!puedeAcceder(modulo, profile.rol)) return <Navigate to="/mml/environment" replace />;
 
     return children;
 }
-
 
 export const appRouter = createBrowserRouter([
 
@@ -83,9 +77,13 @@ export const appRouter = createBrowserRouter([
             },
 
             {
+                path: "usuarios",
+                element: <RouteGuard modulo="usuarios"><Usuarios /></RouteGuard>,
+            },
+            {
                 path: "trazabilidad",
                 element: (
-                    <RouteGuard >
+                    <RouteGuard modulo="trazabilidad">
                         <Trazabilidad />
                     </RouteGuard>
                 )
@@ -93,7 +91,7 @@ export const appRouter = createBrowserRouter([
             {
                 path: "reportes",
                 element: (
-                    <RouteGuard >
+                    <RouteGuard modulo="reportes">
                         <Reportes />
                     </RouteGuard>
                 )
@@ -101,7 +99,7 @@ export const appRouter = createBrowserRouter([
             {
                 path: "bitacora",
                 element: (
-                    <RouteGuard >
+                    <RouteGuard modulo="bitacora">
                         <Bitacora />
                     </RouteGuard>
                 )

@@ -24,6 +24,8 @@ import {
 import mml from "@/assets/mml.png"
 import type { IUser } from "@/interfaces/interfaces"
 
+import { puedeAcceder } from "@/lib/access"
+
 type Props = {
   profile: IUser
 }
@@ -31,78 +33,54 @@ type Props = {
 export function AppSidebar({ profile }: Props) {
 
   
-  /*optiene el acceso de rol 
-  1 = Super Administrador
-  2 = Administrador
-  3 = Almacen 
-      *No podrá ver Trazabilidad
-      *No podrá ver Reportes
-      *No podrá ver Bitácora
-      *No podrá ver Usuarios.
-  */
-  const getAcceso = (modulo : string) => {
-
-    const rol = Number(profile.rol)
-    let deshabilitado = false;
-
-    if((modulo == "trazabilidad" || modulo == "reportes" || modulo == "usuarios" ) && rol == 3)
-    {
-      deshabilitado = true; 
-    }
-
-    return deshabilitado
-
-  }
-
-
   const items = [
     {
       title: "Inicio",
       url: "/mml/environment/",
       icon: LayoutDashboard,
-      habilitado : getAcceso("inicio")
+      habilitado : false
     },
     {
       title: "Residuos Peligrosos",
       url: "/mml/environment/residuos-peligrosos",
       icon: TriangleAlert,
-      habilitado : getAcceso("residuos-peligrosos")
+      habilitado : false
     },
     {
       title: "Residuos sólidos Urbanos",
       url: "/mml/environment/manejo-especial",
       icon: PackageOpen,
-      habilitado : getAcceso("manejo-especial")
+      habilitado : false
     },
     {
       title: "Trazabilidad",
       url: "/mml/environment/trazabilidad",
       icon: FileSearchCorner,
-      habilitado : getAcceso("trazabilidad")
+      habilitado : !puedeAcceder("trazabilidad", profile.rol)
     },
     {
       title: "Reportes",
       url: "/mml/environment/reportes",
       icon: ChartArea,
-      habilitado : getAcceso("reportes")
+      habilitado : !puedeAcceder("reportes", profile.rol)
     },
     {
       title: "Bitácora",
       url: "/mml/environment/bitacora",
       icon: ScrollText,
-      habilitado : getAcceso("bitacora")
+      habilitado : !puedeAcceder("bitacora", profile.rol)
     },
     {
       title: "Usuarios",
-      url: "/",
+      url: "/mml/environment/usuarios",
       icon: Users,
-      habilitado : getAcceso("usuarios")
+      habilitado : !puedeAcceder("usuarios", profile.rol)
     },
     {
       title: "Configuración",
       url: "/",
       icon: Cog,
-      habilitado : getAcceso("configuracion")
+      habilitado : false
     },
   ]
 

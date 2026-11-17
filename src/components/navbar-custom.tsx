@@ -3,9 +3,9 @@ import { useLocation } from "react-router";
 
 
 export function NavBarCustom() {
+
  const location = useLocation();
  const [pathName, setPathName]= useState<string>();
-
 
  useEffect(()=> {
     obtenerTitulo()
