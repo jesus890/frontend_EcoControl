@@ -14,7 +14,8 @@ import type {
   IRestore2Password,
   IForgotPassword,
   ManifiestoEspecialPDF,
-  ResiduoPeligroComentariosSaveI
+  ResiduoPeligroComentariosSaveI,
+  ListBitacoraEspecial
 } from "@/interfaces/interfaces"
 
 /* 
@@ -227,6 +228,12 @@ export const listadoResiduos = () =>
 //listado de bitacora
 export const listadoBitacora = () =>
   apiRequest<any>(axiosAuth.post("/listado_bitacora", {}))
+
+
+export const listadoBitacoraEspecial = () =>
+  apiRequest<{ message: string; result: boolean; data: ListBitacoraEspecial[] }>(
+    axiosAuth.post("/listado_bitacora_especial", {})
+  )
 
 
 

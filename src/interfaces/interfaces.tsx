@@ -153,6 +153,29 @@ export interface ListResiduoPeligroso {
 }
 
 
+export interface ListBitacoraEspecial {
+    id: number;
+    uuid: string;
+    numero_folio: string | number | null;
+    cantidad: number;
+    area_generacion: CatalogoSimple | null;
+    tipo_generador: CatalogoSimple | null;
+    tipo_residuo: (CatalogoSimple & { cretib?: string | null }) | null;
+    tipo_tratamiento: (CatalogoSimple & { cretib?: string | null }) | null;
+    transportista?: CatalogoSimple | null;
+    destino_final?: CatalogoSimple | null;
+    disposicion?: string | null;
+    area_ingreso?: string | null;
+    fecha_entrada: string | null;
+    fecha_salida: string | null;
+    ffecha_entrada?: string | null;
+    ffecha_salida?: string | null;
+    tipo_movimiento: string | number | null;
+    tipo_desc_movimiento?: string | null;
+    comentarios?: string | null;
+    created_at: string;
+}
+
 export interface ListBitacora {
     id: number;
     uuid: string;
