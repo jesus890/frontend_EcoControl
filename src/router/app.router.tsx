@@ -12,6 +12,7 @@ import ManejoEspecial from "@/pages/ManejoEspecial";
 import Trazabilidad from "@/pages/Trazabilidad";
 import Reportes from "@/pages/Reportes";
 import Bitacora from "@/pages/Bitacora";
+import Configuracion from "@/pages/Configuracion";
 import Usuarios from "@/pages/Usuarios";
 import NotFound from "@/pages/NotFound";
 
@@ -76,6 +77,10 @@ export const appRouter = createBrowserRouter([
                 element: <ManejoEspecial />,
             },
 
+            {
+                path: "configuracion",
+                element: <Configuracion />,
+            },
             {
                 path: "usuarios",
                 element: <RouteGuard modulo="usuarios"><Usuarios /></RouteGuard>,

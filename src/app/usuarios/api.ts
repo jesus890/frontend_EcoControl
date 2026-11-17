@@ -46,7 +46,7 @@ export async function crearUsuario(usuario: AltaUsuario) {
   comprobar(data);
 }
 
-async function actualizarUsuario(usuario: Usuario, rol: number, status: number) {
+export async function actualizarUsuario(usuario: Usuario, rol: number, status: number) {
   const { id, name, surname1, surname2, email, title, phone } = usuario;
   if (![name, surname1, surname2, email, title, phone].every((value) => value?.trim())) {
     throw new Error("La API requiere nombre, ambos apellidos, correo, título y teléfono para actualizar esta cuenta. Completa sus datos antes de continuar.");
@@ -55,7 +55,12 @@ async function actualizarUsuario(usuario: Usuario, rol: number, status: number) 
     `/usuarios/update/${encodeURIComponent(id)}`,
     { name, surname1, surname2, email, title, phone, rol, status },
   );
-  comprobar(data);
+  return comprobar(data);
+}
+
+export async function consultarMiPerfil(signal?: AbortSignal) {
+  const { data } = await axiosAuth.get<Usuario>("/user", { signal });
+  return data;
 }
 
 export const rolAsignable = (rol: number | string) =>
@@ -65,17 +70,17 @@ export function cambiarRol(usuario: Usuario, rol: number) {
   if (!rolAsignable(usuario.rol) || !rolAsignable(rol)) {
     throw new Error("No se puede modificar este rol desde el módulo.");
   }
-  return actualizarUsuario(usuario, rol, Number(usuario.status));
+  return actualizarUsuario(usuario, rol, Number(usuario.status)).then(() => undefined);
 }
 
 export function suspenderUsuario(usuario: Usuario) {
   if (!rolAsignable(usuario.rol)) {
     throw new Error("No se puede suspender esta cuenta desde el módulo.");
   }
-  return actualizarUsuario(usuario, Number(usuario.rol), 0);
+  return actualizarUsuario(usuario, Number(usuario.rol), 0).then(() => undefined);
 }
 
-export function mensajeError(error: unknown) {
+export function mensajeError(error: unknown, fallback = "No se pudo completar la solicitud. Consulta el listado antes de reintentar.") {
   if (isAxiosError<{ message?: string; errors?: Record<string, string[]> }>(error)) {
     const response = error.response;
     if (response?.status === 401 || response?.status === 403) return "Tu sesión no tiene permiso para realizar esta operación.";
@@ -83,7 +88,7 @@ export function mensajeError(error: unknown) {
       return Object.values(response.data.errors ?? {}).flat().join(" ") ||
         response.data.message || "Revisa los datos del usuario.";
     }
-    return "No se pudo completar la solicitud. Consulta el listado antes de reintentar.";
+    return fallback;
   }
   return error instanceof Error ? error.message : "Ocurrió un error inesperado.";
 }

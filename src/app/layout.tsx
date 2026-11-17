@@ -85,6 +85,13 @@ export default function Layout() {
   }
 
 
+  function actualizarPerfil(datos: Pick<IUser, "name" | "surname1" | "surname2">) {
+    const fullname = [datos.name, datos.surname1, datos.surname2].filter(Boolean).join(" ");
+    const actualizado = { ...profile, name: datos.name, surname1: datos.surname1, surname2: datos.surname2, fullname };
+    setProfile(actualizado);
+    localStorage.setItem("sesionIniciada", JSON.stringify(actualizado));
+  }
+
   const navigate = useNavigate()
 
   //cierra la sesion del usuario logueado
@@ -131,7 +138,7 @@ export default function Layout() {
         </div>
 
         <div className="w-full">
-          <Outlet context={profile} />
+          <Outlet context={{ ...profile, actualizarPerfil }} />
         </div>
       </SidebarInset>
 

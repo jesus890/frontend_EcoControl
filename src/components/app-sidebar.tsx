@@ -78,7 +78,7 @@ export function AppSidebar({ profile }: Props) {
     },
     {
       title: "Configuración",
-      url: "/",
+      url: "/mml/environment/configuracion",
       icon: Cog,
       habilitado : false
     },
